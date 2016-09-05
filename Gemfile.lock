@@ -49,7 +49,16 @@ GEM
       i18n
       rake (>= 10.0.0)
       sshkit (>= 1.9.0)
+    capistrano-bundler (1.1.4)
+      capistrano (~> 3.1)
+      sshkit (~> 1.2)
     capistrano-harrow (0.5.3)
+    capistrano-rails (1.1.7)
+      capistrano (~> 3.1)
+      capistrano-bundler (~> 1.1)
+    capistrano-rvm (0.1.2)
+      capistrano (~> 3.0)
+      sshkit (~> 1.2)
     concurrent-ruby (1.0.2)
     erubis (2.7.0)
     ffi (1.9.14)
@@ -138,6 +147,9 @@ PLATFORMS
 DEPENDENCIES
   byebug
   capistrano (~> 3.6)
+  capistrano-bundler
+  capistrano-rails
+  capistrano-rvm
   listen (~> 3.0.5)
   pg
   puma (~> 3.0)
