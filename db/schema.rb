@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160905151707) do
+ActiveRecord::Schema.define(version: 20160906160727) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -45,6 +45,22 @@ ActiveRecord::Schema.define(version: 20160905151707) do
     t.datetime "updated_at",                                           null: false
     t.index ["dim_employer_id"], name: "index_fact_employments_on_dim_employer_id", using: :btree
     t.index ["dim_time_id"], name: "index_fact_employments_on_dim_time_id", using: :btree
+  end
+
+  create_table "tmp_employments", force: :cascade do |t|
+    t.integer  "anyo"
+    t.integer  "mes"
+    t.string   "nit"
+    t.integer  "altasTrabajadores",                          default: 0
+    t.decimal  "altasSalarios",     precision: 12, scale: 2
+    t.integer  "bajasTrabajadores",                          default: 0
+    t.decimal  "bajasSalarios",     precision: 12, scale: 2
+    t.integer  "pensionados",                                default: 0
+    t.integer  "totalTrabajadores",                          default: 0
+    t.decimal  "salarios",          precision: 12, scale: 2
+    t.string   "nombre"
+    t.datetime "created_at",                                             null: false
+    t.datetime "updated_at",                                             null: false
   end
 
   add_foreign_key "fact_employments", "dim_employers"

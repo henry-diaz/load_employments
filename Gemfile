@@ -44,3 +44,6 @@ group :development do
   gem 'capistrano-bundler'
   gem 'capistrano-rails'
 end
+
+
+gem 'activerecord-import'
