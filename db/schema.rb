@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160906160727) do
+ActiveRecord::Schema.define(version: 20160908153722) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -59,8 +59,11 @@ ActiveRecord::Schema.define(version: 20160906160727) do
     t.integer  "totalTrabajadores",                          default: 0
     t.decimal  "salarios",          precision: 12, scale: 2
     t.string   "nombre"
-    t.datetime "created_at",                                             null: false
-    t.datetime "updated_at",                                             null: false
+    t.datetime "created_at",                                                 null: false
+    t.datetime "updated_at",                                                 null: false
+    t.string   "state",                                      default: "new"
+    t.text     "comment"
+    t.index ["state"], name: "index_tmp_employments_on_state", using: :btree
   end
 
   add_foreign_key "fact_employments", "dim_employers"
