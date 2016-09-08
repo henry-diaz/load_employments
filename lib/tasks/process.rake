@@ -8,8 +8,8 @@ namespace :process do
       f.puts "#{Time.current.strftime('%d-%m-%Y %H:%M')}. INICIO DE LA CARGA."
     end
     @record = nil
-    TmpEmployment.where(state: 'new').order(id: :asc).find_in_batches do |batch|
-      sleep(50)
+    TmpEmployment.where(state: 'new').order(id: :asc).find_in_batches(batch_size: 10000) do |batch|
+      sleep(5)
       batch.each do |tmp|
         begin
           # Create record
