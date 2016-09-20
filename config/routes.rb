@@ -5,4 +5,8 @@ Rails.application.routes.draw do
       post 'load_employments'
     end
   end
+
+  root 'home#index'
+  get 'employers', to: 'home#employers', constraints: lambda { |req| req.format == :json }
+  get 'export', to: 'home#export'
 end

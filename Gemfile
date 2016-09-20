@@ -47,3 +47,20 @@ end
 
 
 gem 'activerecord-import'
+
+gem 'bootstrap'
+gem 'haml-rails'
+
+# Use SCSS for stylesheets
+gem 'sass-rails'
+
+# Use Uglifier as compressor for JavaScript assets
+gem 'uglifier'
+
+# Use jquery as the JavaScript library
+gem 'jquery-rails'
+
+
+gem 'select2-rails'
+
+gem 'will_paginate'

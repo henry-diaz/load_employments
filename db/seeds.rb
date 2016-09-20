@@ -29,3 +29,22 @@ CSV.foreach(csv_path, headers: false) do |row|
   end
 end
 =end
+
+
+# require 'csv'
+# CSV.open("#{Rails.root.to_s}/db/employers_list.csv", "w") do |csv|
+#   csv << ["NIT", "Nombre", "Sector", "Institución", "", "Área de gestión", "", "Ministerio", ""]
+#   DimEmployer.order(sector: :desc, class_a: :asc, class_b: :asc, class_c: :asc).each do |e|
+#     csv << [
+#       e.nit,
+#       e.name,
+#       e.sector == 0 ? 'Privado' : 'Pública',
+#       e.class_a.to_i > 0 ? "A#{e.class_a}" : '',
+#       e.class_a.to_i > 0 ? EmpMonthMatview::INSTITUTIONS[e.class_a.to_s] : '',
+#       e.class_b.to_i > 0 ? "B#{e.class_b}" : '',
+#       e.class_b.to_i > 0 ? EmpMonthMatview::AREAS[e.class_b.to_s] : '',
+#       e.class_c.to_i > 0 ? "C#{e.class_c}" : '',
+#       e.class_c.to_i > 0 ? EmpMonthMatview::MINISTRIES[e.class_c.to_s] : ''
+#     ]
+#   end
+# end

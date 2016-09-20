@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160908153722) do
+ActiveRecord::Schema.define(version: 20160916154747) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -18,8 +18,17 @@ ActiveRecord::Schema.define(version: 20160908153722) do
   create_table "dim_employers", force: :cascade do |t|
     t.string   "nit"
     t.string   "name"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at",             null: false
+    t.datetime "updated_at",             null: false
+    t.integer  "sector",     default: 0
+    t.integer  "class_a",    default: 0
+    t.integer  "class_b",    default: 0
+    t.integer  "class_c",    default: 0
+    t.index ["class_a"], name: "index_dim_employers_on_class_a", using: :btree
+    t.index ["class_b"], name: "index_dim_employers_on_class_b", using: :btree
+    t.index ["class_c"], name: "index_dim_employers_on_class_c", using: :btree
+    t.index ["name"], name: "dim_employers_name", using: :btree
+    t.index ["sector"], name: "index_dim_employers_on_sector", using: :btree
   end
 
   create_table "dim_times", force: :cascade do |t|
@@ -27,6 +36,17 @@ ActiveRecord::Schema.define(version: 20160908153722) do
     t.integer  "year"
     t.integer  "month"
     t.string   "month_str"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "fact_digestics", force: :cascade do |t|
+    t.integer  "year"
+    t.integer  "occupied"
+    t.integer  "unoccupied"
+    t.integer  "inactive"
+    t.integer  "pea"
+    t.integer  "pet"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end

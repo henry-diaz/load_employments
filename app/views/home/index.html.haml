@@ -1,0 +1,197 @@
+= form_for :q, url: root_url, html: { method: :get, class: 'form-vertical' } do |f|
+  .row
+    .col-xs-12.col-sm-6
+      .form-group
+        %label
+          %strong
+            Sectores
+        = f.select :sector, options_for_select(EmpMonthMatview::SECTORS.invert, (params[:q][:sector] rescue '')), { }, { class: 'form-control' }
+      .form-group
+        %label
+          %strong
+            Instituciones públicas
+        = f.select :institutions, options_for_select(EmpMonthMatview::INSTITUTIONS.invert, (params[:q][:institutions] rescue '')), {}, { class: 'form-control select2-institutions', multiple: true }
+      .form-group
+        %label
+          %strong
+            Áreas de gestión
+        = f.select :areas, options_for_select(EmpMonthMatview::AREAS.invert, (params[:q][:areas] rescue '')), {}, { class: 'form-control  select2-areas', multiple: true }
+      .form-group
+        %label
+          %strong
+            Ministerios
+        = f.select :ministries, options_for_select(EmpMonthMatview::MINISTRIES.invert, (params[:q][:ministries] rescue '')), {}, { class: 'form-control  select2-ministries', multiple: true }
+      .form-group
+        %label
+          %strong
+            Patronos
+        = f.collection_select :employers, @custom_employers, :id, :name, { selected: (params[:q][:employers] rescue '')}, { class: 'form-control  select2-employers', multiple: true }
+    .col-xs-12.col-sm-6
+      .form-group
+        %label
+          %strong
+            Mostrar
+        = f.select :times, options_for_select(EmpMonthMatview::TIMES.invert, (params[:q][:times] rescue '1')), {}, {class: 'form-control'}
+      .form-group
+        %label
+          %strong
+            Desde
+        = f.collection_select :start_at, @times, :period, :month_str, { selected: (params[:q][:start_at] rescue 201501) }, {class: 'form-control'}
+      .form-group
+        %label
+          %strong
+            Hasta
+        = f.collection_select :end_at, @times, :period, :month_str, { selected: (params[:q][:end_at] rescue 201601) }, {class: 'form-control'}
+      .form-group
+        %label
+          %strong
+            Agrupar por
+        = f.select :group_by, options_for_select(EmpMonthMatview::GROUP_BY.invert, (params[:q][:group_by] rescue '0')), {}, {class: 'form-control'}
+      .checkbox
+        %label
+          = f.check_box :show_patron, { checked: (params[:q][:show_patron] == '1' rescue false) }, '1', '0'
+          Mostrar patronos
+      %br
+      = button_tag type: :submit, name: nil, class: 'btn btn-primary' do
+        Consultar
+      = link_to "Descargar Excel", export_url(q: params[:q].to_unsafe_h), class: 'btn btn-success'
+      = link_to "Limpiar filtros", root_url, class: 'btn btn-warning'
+
+.row
+  %br
+  %h4.title
+    Datos
+  .table-responsive
+    %table.table.table-condensed{ style: 'border-collapse: collapse;' }
+      / HEADER
+      %thead
+        %tr
+          %th{ rowspan: 2 }
+            &nbsp
+          - @uniq_times.each_with_index do |t, i|
+            %th{ colspan: 3, style: 'text-align: center;', class: i % 2 == 0 ? 'odd' : nil }
+              = t
+        %tr
+          - @uniq_times.size.times.each_with_index do |n, i|
+            %th{class: i % 2 == 0 ? 'odd' : nil}
+              Total
+            %th{class: i % 2 == 0 ? 'odd' : nil}
+              Salario
+            %th{class: i % 2 == 0 ? 'odd' : nil}
+              Per capita
+      / BODY
+      %tbody
+        / Sectors
+        - @employments.group_by{|e| e.sector}.each do |k, v|
+          %tr.sector
+            %td
+              = EmpMonthMatview::SECTORS[k.to_s].upcase
+            - @uniq_times.each_with_index do |t, i|
+              - employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
+              - if employments
+                %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_with_delimiter employments.sum(&:total)
+                %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency employments.sum(&:amount)
+                %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency (employments.sum(&:amount) / employments.sum(&:total))
+              - else
+                %td{ colspan: 3, class: i % 2 == 0 ? 'odd' : nil }
+                  &nbsp
+          / Detail
+          - if (params[:q][:group_by].to_i != 0 rescue false)
+            / Grouped info
+            - gnumber = params[:q][:group_by].to_i
+            - v.group_by{ |o| gnumber == 1 ? o.class_a : ( gnumber == 2 ? o.class_b : o.class_c ) }.each do |k, v|
+              %tr{ class: (params[:q][:show_patron].to_i == 1 rescue false) ? 'sector' : nil }
+                %td
+                  &thinsp;
+                  = (gnumber == 1 ? EmpMonthMatview::INSTITUTIONS[k.to_s] : ( gnumber == 2 ? EmpMonthMatview::AREAS[k.to_s] : EmpMonthMatview::MINISTRIES[k.to_s])) || 'Sin clasificar'
+                - @uniq_times.each_with_index do |t, i|
+                  - employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
+                  - if employments
+                    %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_with_delimiter employments.sum(&:total)
+                    %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency employments.sum(&:amount)
+                    %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency (employments.sum(&:amount) / employments.sum(&:total)) rescue 0
+                  - else
+                    %td{ colspan: 3, class: i % 2 == 0 ? 'odd' : nil }
+                      &nbsp
+              - if (params[:q][:show_patron].to_i == 1 rescue false)
+                - v.group_by{ |o| o.name }.each do |k, v|
+                  %tr
+                    %td
+                      &thinsp;&thinsp;
+                      = k
+                    - @uniq_times.each_with_index do |t, i|
+                      - employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
+                      - if employments
+                        %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_with_delimiter employments.sum(&:total)
+                        %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency employments.sum(&:amount)
+                        %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency (employments.sum(&:amount) / employments.sum(&:total)) rescue 0
+                      - else
+                        %td{ colspan: 3, class: i % 2 == 0 ? 'odd' : nil }
+                          &nbsp
+          - elsif (params[:q][:show_patron].to_i == 1 rescue false)
+            - v.group_by{ |o| o.name }.each do |k, v|
+              %tr
+                %td
+                  &thinsp;
+                  = k
+                - @uniq_times.each_with_index do |t, i|
+                  - employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
+                  - if employments
+                    %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_with_delimiter employments.sum(&:total)
+                    %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency employments.sum(&:amount)
+                    %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency (employments.sum(&:amount) / employments.sum(&:total)) rescue 0
+                  - else
+                    %td{ colspan: 3, class: i % 2 == 0 ? 'odd' : nil }
+                      &nbsp
+
+        %tr.sector
+          %td
+            TOTAL DE EMPLEOS
+          - @uniq_times.each_with_index do |t, i|
+            - employments = @year_selected ? @employments.select{|o| o.year.to_i == t.to_i} : @employments.select{|o| o.period.to_i == t.to_i}
+            - if employments
+              %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_with_delimiter employments.sum(&:total)
+              %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency employments.sum(&:amount)
+              %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency (employments.sum(&:amount) / employments.sum(&:total)) rescue 0
+            - else
+              %td{ colspan: 3, class: i % 2 == 0 ? 'odd' : nil }
+                &nbsp
+.row
+  %br
+  %h4.title
+    Indicadores DIGESTYC
+  .table-responsive
+    %table.table.table-condensed{ style: 'border-collapse: collapse;' }
+      / HEADER
+      %thead
+        %tr
+          %th
+            &nbsp
+          - @uniq_times.each_with_index do |t, i|
+            %th{ style: 'text-align: center;', class: i % 2 == 0 ? 'odd' : nil }
+              = t
+      %tbody
+        %tr
+          %td
+            PEA
+          - @uniq_times.each_with_index do |t, i|
+            - employments = @year_selected ? @employments.select{|o| o.year.to_i == t.to_i} : @employments.select{|o| o.period.to_i == t.to_i}
+            - if employments
+              %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_with_delimiter employments.first.pea
+            - else
+              %td{ colspan: 2, class: i % 2 == 0 ? 'odd' : nil }
+                &nbsp
+        %tr
+          %td
+            Población ocupado
+          - @uniq_times.each_with_index do |t, i|
+            - employments = @year_selected ? @employments.select{|o| o.year.to_i == t.to_i} : @employments.select{|o| o.period.to_i == t.to_i}
+            - if employments
+              %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_with_delimiter employments.first.occupied
+            - else
+              %td{ colspan: 2, class: i % 2 == 0 ? 'odd' : nil }
+                &nbsp
+-# %ul
+-#   - @employments.each do |emp|
+-#     %li
+-#       = emp.inspect

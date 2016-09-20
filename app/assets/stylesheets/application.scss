@@ -1,0 +1,33 @@
+@import 'bootstrap';
+@import 'select2';
+@import 'select2-bootstrap';
+
+body {
+  font-size: 13px;
+}
+
+tr.danger {
+  td, th {
+    background: #f2dede;
+  }
+}
+
+tr.info {
+  td, th {
+    background: #d9edf7;
+  }
+}
+
+td.odd, th.odd {
+  background: #e6e6e6;
+}
+
+tr.sector {
+  td {
+    font-weight: bolder;
+  }
+}
+
+td.data {
+  text-align: right;
+}
