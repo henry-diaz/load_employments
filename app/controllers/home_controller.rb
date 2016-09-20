@@ -1,4 +1,6 @@
 class HomeController < ApplicationController
+  http_basic_authenticate_with :name => "consultor", :password => "empleos2016", only: :index
+
   def index
     load_data
   end

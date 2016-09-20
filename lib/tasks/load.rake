@@ -127,5 +127,6 @@ namespace :load do
   desc 'Corregir clasificaciones'
   task fix_classifications: [:environment] do
     DimEmployer.where(nit: '06142211071037').first.update_attributes(sector: 1, class_a: 1, class_b: 2, class_c: 3)
+    DimEmployer.where(nit: '06141712041115').first.update_attributes(sector: 1, class_a: 2, class_b: 1, class_c: 16)
   end
 end
