@@ -94,6 +94,29 @@ class HomeController < ApplicationController
         end
       end
       csv << row.flatten
+
+      # We add to the csv the indicators of digestyc
+      csv << ['']
+      csv << ['']
+      header = ['Indicadores DIGESTYC']
+      @uniq_times.each do |t|
+        header << t
+      end
+      csv << header.flatten
+      row_1 = ['PEA']
+      row_2 = ['Población ocupada']
+      @uniq_times.each do |t|
+        employments = @year_selected ? @employments.select{|o| o.year.to_i == t.to_i} : @employments.select{|o| o.period.to_i == t.to_i}
+        if employments
+          row_1 << employments.first.pea rescue 0
+          row_2 << employments.first.occupied rescue 0
+        else
+          row_1 << ''
+          row_2 << ''
+        end
+      end
+      csv << row_1.flatten
+      csv << row_2.flatten
     end
     send_data csv_string, type: 'application/excel', filename: "estadisticas-empleos-#{Date.current.try(:strftime, '%Y%m%d')}.csv", disposition: 'attachment'
   end
