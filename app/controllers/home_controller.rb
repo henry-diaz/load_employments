@@ -182,9 +182,9 @@ class HomeController < ApplicationController
                       .order(group_string)
       # Extract time periods
       if @year_selected
-        @uniq_times = @employments.pluck(:year).uniq
+        @uniq_times = @employments.pluck(:year).uniq.sort
       else
-        @uniq_times = @employments.pluck(:period).uniq
+        @uniq_times = @employments.pluck(:period).uniq.sort
       end
     else
       # Go to default values

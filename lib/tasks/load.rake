@@ -128,5 +128,33 @@ namespace :load do
   task fix_classifications: [:environment] do
     DimEmployer.where(nit: '06142211071037').first.update_attributes(sector: 1, class_a: 1, class_b: 2, class_c: 3)
     DimEmployer.where(nit: '06141712041115').first.update_attributes(sector: 1, class_a: 2, class_b: 1, class_c: 16)
+    DimEmployer.where(nit: '01010101010101').first.update_attributes(sector: 1, class_a: 1, class_b: 3, class_c: 7)
+    DimEmployer.where(nit: '02020202020202').first.update_attributes(sector: 1, class_a: 2, class_b: 9, class_c: 9)
+    DimEmployer.where(nit: '03030303030303').first.update_attributes(sector: 1, class_a: 2, class_b: 3, class_c: 1)
+  end
+
+  desc 'Cargar clasificaciones para privados'
+  task extra_classifications: [:environment] do
+    require 'csv'
+    csv_path = "#{Rails.root.to_s}/db/privados.csv"
+    CSV.foreach(csv_path, headers: true, encoding:'utf-8') do |row|
+      begin
+        nit = row[1].rjust(14, "0")
+        employer = DimEmployer.where(nit: nit, sector: 0).first
+        if employer
+          employer.class_a = EmpMonthMatview::INSTITUTIONS.invert[row[0]]
+          employer.save
+        else
+          # LOG failed insert data
+          open("#{Rails.root.to_s}/log/process.log", 'a') do |f|
+            f.puts ""
+            f.puts ""
+            f.puts "#{row.inspect}"
+          end
+        end
+      rescue Exception => e
+        puts "Error en la búsqueda #{e}"
+      end
+    end
   end
 end

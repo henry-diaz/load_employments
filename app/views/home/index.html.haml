@@ -9,7 +9,7 @@
       .form-group
         %label
           %strong
-            Instituciones públicas
+            Tipo de institución / Actividad económica
         = f.select :institutions, options_for_select(EmpMonthMatview::INSTITUTIONS.invert, (params[:q][:institutions] rescue '')), {}, { class: 'form-control select2-institutions', multiple: true }
       .form-group
         %label
@@ -91,7 +91,7 @@
               - if employments
                 %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_with_delimiter employments.sum(&:total)
                 %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency employments.sum(&:amount)
-                %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency (employments.sum(&:amount) / employments.sum(&:total))
+                %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency ((employments.sum(&:amount) / employments.sum(&:total) rescue 0))
               - else
                 %td{ colspan: 3, class: i % 2 == 0 ? 'odd' : nil }
                   &nbsp
