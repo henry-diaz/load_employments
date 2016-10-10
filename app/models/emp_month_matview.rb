@@ -8,22 +8,22 @@ class EmpMonthMatview < ActiveRecord::Base
   }
 
   INSTITUTIONS = {
-    '1' => 'Ministerios',
+    '5' => 'Alcaldías',
     '2' => 'Autónomas',
     '3' => 'Instituciones descentralizadas',
     '4' => 'Instituciones financieras',
-    '5' => 'Alcaldías',
     '6' => 'Instituciones independientes al órgano ejecutivo',
-    '7' => 'AGRICULTURA,CAZA,SILVICULTURA Y PESCA',
-    '8' => 'COMERCIO,RESTAURANTES Y HOTELES',
-    '9' => 'CONSTRUCCIÓN',
-    '10' => 'ELECTRICIDAD,LUZ Y AGUA',
-    '11' => 'ESTABLEC.,FINANCI.,SEGUROS,BIENES INMUEBLES',
-    '12' => 'EXPLOTACIÓN DE MINAS Y CANTERAS',
-    '13' => 'INDUSTRIAS MANUFACTURERAS',
-    '14' => 'SERVICIO DOMÉSTICO',
-    '15' => 'SERVICIOS COMUNALES,SOCIALES Y PERSONALES',
-    '16' => 'TRANSPORTE,ALMACENAMIENTOS Y  COMUNICAC.'
+    '1' => 'Ministerios',
+    '12' => 'Agricultura,caza,silvicultura y pesca',
+    '7' => 'Comercio,restaurantes y hoteles',
+    '13' => 'Construcción',
+    '15' => 'Electricidad,luz y agua',
+    '9' => 'Establec.,financi.,seguros,bienes inmuebles',
+    '16' => 'Explotación de minas y canteras',
+    '10' => 'Industrias manufactureras',
+    '8' => 'Servicios comunales,sociales y personales',
+    '14' => 'Servicio Doméstico',
+    '11' => 'Transporte,almacenamientos y  comunicac.'
   }
 
   AREAS = {

@@ -139,10 +139,10 @@ namespace :load do
     csv_path = "#{Rails.root.to_s}/db/privados.csv"
     CSV.foreach(csv_path, headers: true, encoding:'utf-8') do |row|
       begin
-        nit = row[1].rjust(14, "0")
+        nit = row[0].rjust(14, "0")
         employer = DimEmployer.where(nit: nit, sector: 0).first
         if employer
-          employer.class_a = EmpMonthMatview::INSTITUTIONS.invert[row[0]]
+          employer.class_a = EmpMonthMatview::INSTITUTIONS.invert[row[3]]
           employer.save
         else
           # LOG failed insert data
