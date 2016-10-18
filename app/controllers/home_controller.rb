@@ -29,7 +29,7 @@ class HomeController < ApplicationController
         @uniq_times.each do |t|
           employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
           if employments
-            row << [employments.sum(&:total), employments.sum(&:amount).try(:round, 2), (employments.sum(&:amount) / employments.sum(&:total)).try(:round, 2)]
+            row << [employments.sum(&:total), employments.sum(&:amount).try(:round, 2), (employments.sum(&:amount) / employments.sum(&:total) rescue 0).try(:round, 2)]
           else
             row << ['','','']
           end
