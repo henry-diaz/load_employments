@@ -14,24 +14,25 @@ class HomeController < ApplicationController
     require 'csv'
     load_data
     csv_string = CSV.generate do |csv|
+
+
+
+      #### TOTAL EMPLEADOS ####
       # first the header
-      header_1 = ['']
-      header_2 = ['']
+      header = ['EMPLEOS']
       @uniq_times.each do |t|
-        header_1 << ['',t,'']
-        header_2 << ['Total', 'Salario', 'Per capita']
+        header << [t]
       end
-      csv << header_1.flatten
-      csv << header_2.flatten
+      csv << header.flatten
       # second, the sectors
       @employments.group_by{|e| e.sector}.each do |k, v|
         row = [EmpMonthMatview::SECTORS[k.to_s].upcase]
         @uniq_times.each do |t|
           employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
           if employments
-            row << [employments.sum(&:total), employments.sum(&:amount).try(:round, 2), (employments.sum(&:amount) / employments.sum(&:total) rescue 0).try(:round, 2)]
+            row << [employments.sum(&:total)]
           else
-            row << ['','','']
+            row << ['']
           end
         end
         csv << row.flatten
@@ -45,9 +46,9 @@ class HomeController < ApplicationController
             @uniq_times.each_with_index do |t, i|
               employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
               if employments
-                row << [employments.sum(&:total), employments.sum(&:amount).try(:round, 2), (employments.sum(&:amount) / employments.sum(&:total) rescue 0).try(:round, 2)]
+                row << [employments.sum(&:total)]
               else
-                row << ['','','']
+                row << ['']
               end
             end
             csv << row.flatten
@@ -58,9 +59,9 @@ class HomeController < ApplicationController
                 @uniq_times.each_with_index do |t, i|
                   employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
                   if employments
-                    row << [employments.sum(&:total), employments.sum(&:amount).try(:round, 2), (employments.sum(&:amount) / employments.sum(&:total) rescue 0).try(:round, 2)]
+                    row << [employments.sum(&:total)]
                   else
-                    row << ['','','']
+                    row << ['']
                   end
                 end
                 csv << row.flatten
@@ -74,9 +75,9 @@ class HomeController < ApplicationController
             @uniq_times.each_with_index do |t, i|
               employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
               if employments
-                row << [employments.sum(&:total), employments.sum(&:amount).try(:round, 2), (employments.sum(&:amount) / employments.sum(&:total) rescue 0).try(:round, 2)]
+                row << [employments.sum(&:total)]
               else
-                row << ['','','']
+                row << ['']
               end
             end
             csv << row.flatten
@@ -88,9 +89,175 @@ class HomeController < ApplicationController
       @uniq_times.each do |t|
         employments = @year_selected ? @employments.select{|o| o.year.to_i == t.to_i} : @employments.select{|o| o.period.to_i == t.to_i}
         if employments
-          row << [employments.sum(&:total), employments.sum(&:amount).try(:round, 2), (employments.sum(&:amount) / employments.sum(&:total) rescue 0).try(:round, 2)]
+          row << [employments.sum(&:total)]
         else
-          row << ['','','']
+          row << ['']
+        end
+      end
+      csv << row.flatten
+
+
+
+      #### TOTAL SALARIOS ####
+      csv << ['']
+      csv << ['']
+      # first the header
+      header = ['SALARIOS']
+      @uniq_times.each do |t|
+        header << [t]
+      end
+      csv << header.flatten
+      # second, the sectors
+      @employments.group_by{|e| e.sector}.each do |k, v|
+        row = [EmpMonthMatview::SECTORS[k.to_s].upcase]
+        @uniq_times.each do |t|
+          employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
+          if employments
+            row << [employments.sum(&:amount).try(:round, 2)]
+          else
+            row << ['']
+          end
+        end
+        csv << row.flatten
+        # detail of sectors
+        if (params[:q][:group_by].to_i != 0 rescue false)
+          gnumber = params[:q][:group_by].to_i
+          v.group_by{ |o| gnumber == 1 ? o.class_a : ( gnumber == 2 ? o.class_b : o.class_c ) }.each do |k, v|
+            row = [
+              (gnumber == 1 ? EmpMonthMatview::INSTITUTIONS[k.to_s] : ( gnumber == 2 ? EmpMonthMatview::AREAS[k.to_s] : EmpMonthMatview::MINISTRIES[k.to_s])) || 'Sin clasificar'
+            ]
+            @uniq_times.each_with_index do |t, i|
+              employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
+              if employments
+                row << [employments.sum(&:amount).try(:round, 2)]
+              else
+                row << ['']
+              end
+            end
+            csv << row.flatten
+            # Verify patrons too
+            if (params[:q][:show_patron].to_i == 1 rescue false)
+              v.group_by{ |o| o.name }.each do |k, v|
+                row = [k]
+                @uniq_times.each_with_index do |t, i|
+                  employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
+                  if employments
+                    row << [employments.sum(&:amount).try(:round, 2)]
+                  else
+                    row << ['']
+                  end
+                end
+                csv << row.flatten
+              end
+            end
+          end
+        # no detail of sectors, but show the patrons
+        elsif (params[:q][:show_patron].to_i == 1 rescue false)
+          v.group_by{ |o| o.name }.each do |k, v|
+            row = [k]
+            @uniq_times.each_with_index do |t, i|
+              employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
+              if employments
+                row << [employments.sum(&:amount).try(:round, 2)]
+              else
+                row << ['']
+              end
+            end
+            csv << row.flatten
+          end
+        end
+      end
+      # last the total sectors
+      row = ['TOTAL DE SALARIOS']
+      @uniq_times.each do |t|
+        employments = @year_selected ? @employments.select{|o| o.year.to_i == t.to_i} : @employments.select{|o| o.period.to_i == t.to_i}
+        if employments
+          row << [employments.sum(&:amount).try(:round, 2)]
+        else
+          row << ['']
+        end
+      end
+      csv << row.flatten
+
+
+
+      #### TOTAL PER CAPITA ####
+      csv << ['']
+      csv << ['']
+      # first the header
+      header = ['PER CAPITA']
+      @uniq_times.each do |t|
+        header << [t]
+      end
+      csv << header.flatten
+      # second, the sectors
+      @employments.group_by{|e| e.sector}.each do |k, v|
+        row = [EmpMonthMatview::SECTORS[k.to_s].upcase]
+        @uniq_times.each do |t|
+          employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
+          if employments
+            row << [(employments.sum(&:amount) / employments.sum(&:total) rescue 0).try(:round, 2)]
+          else
+            row << ['']
+          end
+        end
+        csv << row.flatten
+        # detail of sectors
+        if (params[:q][:group_by].to_i != 0 rescue false)
+          gnumber = params[:q][:group_by].to_i
+          v.group_by{ |o| gnumber == 1 ? o.class_a : ( gnumber == 2 ? o.class_b : o.class_c ) }.each do |k, v|
+            row = [
+              (gnumber == 1 ? EmpMonthMatview::INSTITUTIONS[k.to_s] : ( gnumber == 2 ? EmpMonthMatview::AREAS[k.to_s] : EmpMonthMatview::MINISTRIES[k.to_s])) || 'Sin clasificar'
+            ]
+            @uniq_times.each_with_index do |t, i|
+              employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
+              if employments
+                row << [(employments.sum(&:amount) / employments.sum(&:total) rescue 0).try(:round, 2)]
+              else
+                row << ['']
+              end
+            end
+            csv << row.flatten
+            # Verify patrons too
+            if (params[:q][:show_patron].to_i == 1 rescue false)
+              v.group_by{ |o| o.name }.each do |k, v|
+                row = [k]
+                @uniq_times.each_with_index do |t, i|
+                  employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
+                  if employments
+                    row << [(employments.sum(&:amount) / employments.sum(&:total) rescue 0).try(:round, 2)]
+                  else
+                    row << ['']
+                  end
+                end
+                csv << row.flatten
+              end
+            end
+          end
+        # no detail of sectors, but show the patrons
+        elsif (params[:q][:show_patron].to_i == 1 rescue false)
+          v.group_by{ |o| o.name }.each do |k, v|
+            row = [k]
+            @uniq_times.each_with_index do |t, i|
+              employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
+              if employments
+                row << [(employments.sum(&:amount) / employments.sum(&:total) rescue 0).try(:round, 2)]
+              else
+                row << ['']
+              end
+            end
+            csv << row.flatten
+          end
+        end
+      end
+      # last the total sectors
+      row = ['TOTAL PER CAPITA']
+      @uniq_times.each do |t|
+        employments = @year_selected ? @employments.select{|o| o.year.to_i == t.to_i} : @employments.select{|o| o.period.to_i == t.to_i}
+        if employments
+          row << [(employments.sum(&:amount) / employments.sum(&:total) rescue 0).try(:round, 2)]
+        else
+          row << ['']
         end
       end
       csv << row.flatten
