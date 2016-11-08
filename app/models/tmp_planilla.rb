@@ -1,0 +1,2 @@
+class TmpPlanilla < ApplicationRecord
+end

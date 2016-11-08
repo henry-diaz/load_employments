@@ -49,6 +49,47 @@ class ApiController < ApplicationController
     end
   end
 
+  def planillas
+    # idPlanilla
+    # noPatronal
+    # nombrePatrno
+    # nit
+    # estado (1 recibo emitido, 0 anulado)
+    begin
+      TmpPlanilla.transaction do
+        planillas = @json.map(&:values)
+        columns = [:idPlanilla, :noPatronal, :nombrePatrono, :nit, :estado]
+        TmpPlanilla.import columns, planillas, validate: false
+        head :ok
+      end
+    rescue Exception => e
+      render json: { error: "Se presento un error #{e}" }, status: 500
+    end
+  end
+
+  def detalle_planillas
+    # idPlanilla
+    # anyo
+    # mes
+    # nitPatrono
+    # noAfiliacionTrabajador
+    # montoSalario
+    # montoPagoAdicional
+    # montoVacacion
+    # montoPresentado
+    # codigoObservacion
+    begin
+      TmpDetallePlanilla.transaction do
+        detalle_planillas = @json.map(&:values)
+        columns = [:idPlanilla, :anyo, :mes, :nitPatrono, :noAfiliacionTrabajador, :montoSalario, :montoPagoAdicional, :montoVacacion, :montoPresentado, :codigoObservacion]
+        TmpDetallePlanilla.import columns, detalle_planillas, validate: false
+        head :ok
+      end
+    rescue Exception => e
+      render json: { error: "Se presento un error #{e}" }, status: 500
+    end
+  end
+
   private
     def parse_request
       begin

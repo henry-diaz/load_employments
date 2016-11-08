@@ -3,6 +3,8 @@ Rails.application.routes.draw do
   resources :api, only: [] do
     collection do
       post 'load_employments'
+      post 'planillas'
+      post 'detalle_planillas'
     end
   end
 
