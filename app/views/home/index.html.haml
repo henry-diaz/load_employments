@@ -57,28 +57,21 @@
       = link_to "Descargar Excel", export_url(q: params[:q] ? params[:q].to_unsafe_h : nil), class: 'btn btn-success'
       = link_to "Limpiar filtros", root_url, class: 'btn btn-warning'
 
+/ EMPLEOS
 .row
   %br
   %h4.title
-    Datos
+    EMPLEOS
   .table-responsive
     %table.table.table-condensed{ style: 'border-collapse: collapse;' }
       / HEADER
       %thead
         %tr
-          %th{ rowspan: 2 }
+          %th
             &nbsp
           - @uniq_times.each_with_index do |t, i|
-            %th{ colspan: 3, style: 'text-align: center;', class: i % 2 == 0 ? 'odd' : nil }
+            %th{ style: 'text-align: center;', class: i % 2 == 0 ? 'odd' : nil }
               = t
-        %tr
-          - @uniq_times.size.times.each_with_index do |n, i|
-            %th{class: i % 2 == 0 ? 'odd' : nil}
-              Total
-            %th{class: i % 2 == 0 ? 'odd' : nil}
-              Salario
-            %th{class: i % 2 == 0 ? 'odd' : nil}
-              Per capita
       / BODY
       %tbody
         / Sectors
@@ -90,10 +83,8 @@
               - employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
               - if employments
                 %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_with_delimiter employments.sum(&:total)
-                %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency employments.sum(&:amount)
-                %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency ((employments.sum(&:amount) / employments.sum(&:total) rescue 0))
               - else
-                %td{ colspan: 3, class: i % 2 == 0 ? 'odd' : nil }
+                %td{ class: i % 2 == 0 ? 'odd' : nil }
                   &nbsp
           / Detail
           - if (params[:q][:group_by].to_i != 0 rescue false)
@@ -108,10 +99,8 @@
                   - employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
                   - if employments
                     %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_with_delimiter employments.sum(&:total)
-                    %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency employments.sum(&:amount)
-                    %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency (employments.sum(&:amount) / employments.sum(&:total)) rescue 0
                   - else
-                    %td{ colspan: 3, class: i % 2 == 0 ? 'odd' : nil }
+                    %td{ class: i % 2 == 0 ? 'odd' : nil }
                       &nbsp
               - if (params[:q][:show_patron].to_i == 1 rescue false)
                 - v.group_by{ |o| o.name }.each do |k, v|
@@ -123,10 +112,8 @@
                       - employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
                       - if employments
                         %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_with_delimiter employments.sum(&:total)
-                        %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency employments.sum(&:amount)
-                        %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency (employments.sum(&:amount) / employments.sum(&:total)) rescue 0
                       - else
-                        %td{ colspan: 3, class: i % 2 == 0 ? 'odd' : nil }
+                        %td{ class: i % 2 == 0 ? 'odd' : nil }
                           &nbsp
           - elsif (params[:q][:show_patron].to_i == 1 rescue false)
             - v.group_by{ |o| o.name }.each do |k, v|
@@ -138,10 +125,8 @@
                   - employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
                   - if employments
                     %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_with_delimiter employments.sum(&:total)
-                    %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency employments.sum(&:amount)
-                    %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency (employments.sum(&:amount) / employments.sum(&:total)) rescue 0
                   - else
-                    %td{ colspan: 3, class: i % 2 == 0 ? 'odd' : nil }
+                    %td{ class: i % 2 == 0 ? 'odd' : nil }
                       &nbsp
 
         %tr.sector
@@ -151,10 +136,172 @@
             - employments = @year_selected ? @employments.select{|o| o.year.to_i == t.to_i} : @employments.select{|o| o.period.to_i == t.to_i}
             - if employments
               %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_with_delimiter employments.sum(&:total)
+            - else
+              %td{ class: i % 2 == 0 ? 'odd' : nil }
+                &nbsp
+/ SALARIOS
+.row
+  %br
+  %h4.title
+    SALARIOS
+  .table-responsive
+    %table.table.table-condensed{ style: 'border-collapse: collapse;' }
+      / HEADER
+      %thead
+        %tr
+          %th
+            &nbsp
+          - @uniq_times.each_with_index do |t, i|
+            %th{ style: 'text-align: center;', class: i % 2 == 0 ? 'odd' : nil }
+              = t
+      / BODY
+      %tbody
+        / Sectors
+        - @employments.group_by{|e| e.sector}.each do |k, v|
+          %tr.sector
+            %td
+              = EmpMonthMatview::SECTORS[k.to_s].upcase
+            - @uniq_times.each_with_index do |t, i|
+              - employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
+              - if employments
+                %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency employments.sum(&:amount)
+              - else
+                %td{ class: i % 2 == 0 ? 'odd' : nil }
+                  &nbsp
+          / Detail
+          - if (params[:q][:group_by].to_i != 0 rescue false)
+            / Grouped info
+            - gnumber = params[:q][:group_by].to_i
+            - v.group_by{ |o| gnumber == 1 ? o.class_a : ( gnumber == 2 ? o.class_b : o.class_c ) }.each do |k, v|
+              %tr{ class: (params[:q][:show_patron].to_i == 1 rescue false) ? 'sector' : nil }
+                %td
+                  &thinsp;
+                  = (gnumber == 1 ? EmpMonthMatview::INSTITUTIONS[k.to_s] : ( gnumber == 2 ? EmpMonthMatview::AREAS[k.to_s] : EmpMonthMatview::MINISTRIES[k.to_s])) || 'Sin clasificar'
+                - @uniq_times.each_with_index do |t, i|
+                  - employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
+                  - if employments
+                    %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency employments.sum(&:amount)
+                  - else
+                    %td{ class: i % 2 == 0 ? 'odd' : nil }
+                      &nbsp
+              - if (params[:q][:show_patron].to_i == 1 rescue false)
+                - v.group_by{ |o| o.name }.each do |k, v|
+                  %tr
+                    %td
+                      &thinsp;&thinsp;
+                      = k
+                    - @uniq_times.each_with_index do |t, i|
+                      - employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
+                      - if employments
+                        %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency employments.sum(&:amount)
+                      - else
+                        %td{ class: i % 2 == 0 ? 'odd' : nil }
+                          &nbsp
+          - elsif (params[:q][:show_patron].to_i == 1 rescue false)
+            - v.group_by{ |o| o.name }.each do |k, v|
+              %tr
+                %td
+                  &thinsp;
+                  = k
+                - @uniq_times.each_with_index do |t, i|
+                  - employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
+                  - if employments
+                    %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency employments.sum(&:amount)
+                  - else
+                    %td{ class: i % 2 == 0 ? 'odd' : nil }
+                      &nbsp
+
+        %tr.sector
+          %td
+            TOTAL DE SALARIOS
+          - @uniq_times.each_with_index do |t, i|
+            - employments = @year_selected ? @employments.select{|o| o.year.to_i == t.to_i} : @employments.select{|o| o.period.to_i == t.to_i}
+            - if employments
               %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency employments.sum(&:amount)
+            - else
+              %td{ class: i % 2 == 0 ? 'odd' : nil }
+                &nbsp
+/ PER CAPITA
+.row
+  %br
+  %h4.title
+    PER CAPITA
+  .table-responsive
+    %table.table.table-condensed{ style: 'border-collapse: collapse;' }
+      / HEADER
+      %thead
+        %tr
+          %th
+            &nbsp
+          - @uniq_times.each_with_index do |t, i|
+            %th{ style: 'text-align: center;', class: i % 2 == 0 ? 'odd' : nil }
+              = t
+      / BODY
+      %tbody
+        / Sectors
+        - @employments.group_by{|e| e.sector}.each do |k, v|
+          %tr.sector
+            %td
+              = EmpMonthMatview::SECTORS[k.to_s].upcase
+            - @uniq_times.each_with_index do |t, i|
+              - employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
+              - if employments
+                %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency ((employments.sum(&:amount) / employments.sum(&:total) rescue 0))
+              - else
+                %td{ class: i % 2 == 0 ? 'odd' : nil }
+                  &nbsp
+          / Detail
+          - if (params[:q][:group_by].to_i != 0 rescue false)
+            / Grouped info
+            - gnumber = params[:q][:group_by].to_i
+            - v.group_by{ |o| gnumber == 1 ? o.class_a : ( gnumber == 2 ? o.class_b : o.class_c ) }.each do |k, v|
+              %tr{ class: (params[:q][:show_patron].to_i == 1 rescue false) ? 'sector' : nil }
+                %td
+                  &thinsp;
+                  = (gnumber == 1 ? EmpMonthMatview::INSTITUTIONS[k.to_s] : ( gnumber == 2 ? EmpMonthMatview::AREAS[k.to_s] : EmpMonthMatview::MINISTRIES[k.to_s])) || 'Sin clasificar'
+                - @uniq_times.each_with_index do |t, i|
+                  - employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
+                  - if employments
+                    %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency (employments.sum(&:amount) / employments.sum(&:total)) rescue 0
+                  - else
+                    %td{ class: i % 2 == 0 ? 'odd' : nil }
+                      &nbsp
+              - if (params[:q][:show_patron].to_i == 1 rescue false)
+                - v.group_by{ |o| o.name }.each do |k, v|
+                  %tr
+                    %td
+                      &thinsp;&thinsp;
+                      = k
+                    - @uniq_times.each_with_index do |t, i|
+                      - employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
+                      - if employments
+                        %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency (employments.sum(&:amount) / employments.sum(&:total)) rescue 0
+                      - else
+                        %td{ class: i % 2 == 0 ? 'odd' : nil }
+                          &nbsp
+          - elsif (params[:q][:show_patron].to_i == 1 rescue false)
+            - v.group_by{ |o| o.name }.each do |k, v|
+              %tr
+                %td
+                  &thinsp;
+                  = k
+                - @uniq_times.each_with_index do |t, i|
+                  - employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
+                  - if employments
+                    %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency (employments.sum(&:amount) / employments.sum(&:total)) rescue 0
+                  - else
+                    %td{ class: i % 2 == 0 ? 'odd' : nil }
+                      &nbsp
+
+        %tr.sector
+          %td
+            TOTAL PER CAPITA
+          - @uniq_times.each_with_index do |t, i|
+            - employments = @year_selected ? @employments.select{|o| o.year.to_i == t.to_i} : @employments.select{|o| o.period.to_i == t.to_i}
+            - if employments
               %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency (employments.sum(&:amount) / employments.sum(&:total)) rescue 0
             - else
-              %td{ colspan: 3, class: i % 2 == 0 ? 'odd' : nil }
+              %td{ class: i % 2 == 0 ? 'odd' : nil }
                 &nbsp
 .row
   %br
