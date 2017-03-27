@@ -13,7 +13,7 @@ class HomeController < ApplicationController
   def export
     require 'csv'
     load_data
-    csv_string = CSV.generate do |csv|
+    csv_string = CSV.generate(col_sep: ';') do |csv|
 
 
 
