@@ -136,10 +136,30 @@ namespace :load do
   desc 'Cargar clasificaciones para privados'
   task extra_classifications: [:environment] do
     require 'csv'
-    csv_path = "#{Rails.root.to_s}/db/privados.csv"
+    csv_path = "#{Rails.root.to_s}/db/listado_privados_1.csv"
     CSV.foreach(csv_path, headers: true, encoding:'utf-8') do |row|
       begin
-        nit = row[0].rjust(14, "0")
+        nit = row[0].rjust(14, "0") rescue nil
+        employer = DimEmployer.where(nit: nit, sector: 0).first
+        if employer
+          employer.class_a = EmpMonthMatview::INSTITUTIONS.invert[row[3]]
+          employer.save
+        else
+          # LOG failed insert data
+          open("#{Rails.root.to_s}/log/process.log", 'a') do |f|
+            f.puts ""
+            f.puts ""
+            f.puts "#{row.inspect}"
+          end
+        end
+      rescue Exception => e
+        puts "Error en la búsqueda #{e}"
+      end
+    end
+    csv_path = "#{Rails.root.to_s}/db/listado_privados_2.csv"
+    CSV.foreach(csv_path, headers: true, encoding:'utf-8') do |row|
+      begin
+        nit = row[0].rjust(14, "0") rescue nil
         employer = DimEmployer.where(nit: nit, sector: 0).first
         if employer
           employer.class_a = EmpMonthMatview::INSTITUTIONS.invert[row[3]]
