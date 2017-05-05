@@ -37,16 +37,18 @@ class ApiController < ApplicationController
     #   end
     #   render json: { error: "Se presento un error al cargar los siguientes datos #{@record}" }, status: 500
     # end
-    begin
-      TmpEmployment.transaction do
-        employments = @json.map(&:values)
-        columns = [:anyo, :mes, :nit, :altasTrabajadores, :altasSalarios, :bajasTrabajadores, :bajasSalarios, :pensionados, :totalTrabajadores, :salarios, :nombre]
-        TmpEmployment.import columns, employments, validate: false
-        head :ok
-      end
-    rescue Exception => e
-      render json: { error: "Se presento un error #{e}" }, status: 500
-    end
+    #### COMMENT WS
+    # begin
+    #   TmpEmployment.transaction do
+    #     employments = @json.map(&:values)
+    #     columns = [:anyo, :mes, :nit, :altasTrabajadores, :altasSalarios, :bajasTrabajadores, :bajasSalarios, :pensionados, :totalTrabajadores, :salarios, :nombre]
+    #     TmpEmployment.import columns, employments, validate: false
+    #     head :ok
+    #   end
+    # rescue Exception => e
+    #   render json: { error: "Se presento un error #{e}" }, status: 500
+    # end
+    head :ok
   end
 
   def planillas
