@@ -48,3 +48,28 @@ end
 #     ]
 #   end
 # end
+
+# require 'csv'
+# csv_path = "#{Rails.root.to_s}/db/clasificador_patronos_completo.csv"
+# # Todos por defecto son privados
+# DimEmployer.update_all(sector: 0, class_a: 0, class_b: 0, class_c: 0)
+# CSV.foreach(csv_path, headers: true) do |row|
+#   begin
+#     unless row[1].blank?
+#       unless [1,8].include?(row[1].to_i)
+#         # Es público, actualizamos esta clasificación en el patrono
+#         e = DimEmployer.where(nit: row[0]).first
+#         if e
+#           e.update_column(:sector, 1)
+#         else
+#           puts "No se encontro el patrono con nit #{row[0]}"
+#         end
+#       end
+#     end
+#     #  unless [1,8].include?(row[1].to_i)
+#     #    puts "#{row[1]} es en realidad #{[1,8].include?(row[1].to_i) ? 'privado' : 'público'}"
+#     #  end
+#   rescue
+#     puts "Error en la carga"
+#   end
+# end

@@ -1,13 +1,97 @@
 class HomeController < ApplicationController
-  http_basic_authenticate_with :name => "consultor", :password => "empleos2016", only: :index
+  http_basic_authenticate_with :name => "consultor", :password => "empleos2016", only: :index unless Rails.env.development?
 
   def index
     load_data
   end
 
   def employers
-    @employers = DimEmployer.where('name ilike ?', "%#{params[:q]}%").paginate(per_page: 30, page: params[:page])
-    render json: {items: @employers.as_json(only: [:id], methods: [:text])}
+    @employers = DimEmployer.select(:nit, :name).where('name ilike ?', "%#{params[:q]}%").paginate(per_page: 30, page: params[:page])
+    h = []
+    @employers.each{|e| h << {id: e.nit, text: e.name } }
+    render json: {items: h}
+  end
+
+  def load_data
+    @times = DimTime.order(:period)
+    @year_selected = true
+    @custom_employers = []
+    if params[:q].present?
+      select_string = ''
+      group_string = ''
+      where_string = ''
+      class_group = ''
+      # group string
+      case params[:q][:group_by]
+        when '1'
+          class_group = ', ciiu_code'
+        when '2'
+          class_group = ', class_a'
+        when '3'
+          class_group = ', class_b'
+        when '4'
+          class_group = ', class_c'
+        else
+          class_group = ''
+      end
+      # show patrons
+      class_group += ', name' if params[:q][:show_patron].to_i == 1
+      # selected and grouped strings
+      case params[:q][:times]
+      when '1'
+        select_string = "sector#{class_group}, year, sum(total) / 12 as total, sum(amount) / 12 as amount, max(pea) as pea, max(occupied) as occupied"
+        group_string = "sector#{class_group}, year"
+      when '2'
+        select_string = "sector#{class_group}, year, sum(total) as total, sum(amount) as amount, max(pea) as pea, max(occupied) as occupied"
+        group_string = "sector#{class_group}, year"
+      when '3'
+        select_string = "sector#{class_group}, period, avg(total) as total, avg(amount) as amount, max(pea) as pea, max(occupied) as occupied"
+        group_string = "sector#{class_group}, period"
+        @year_selected = false
+      else
+        select_string = "sector#{class_group}, period, sum(total) as total, sum(amount) as amount, max(pea) as pea, max(occupied) as occupied"
+        group_string = "sector#{class_group}, period"
+        @year_selected = false
+      end
+      # time conditions
+      where_string += ' period BETWEEN ' + params[:q][:start_at] + ' AND ' + params[:q][:end_at]
+      # sector conditions
+      where_string += ' AND sector = ' + params[:q][:sector] if params[:q][:sector].present?
+      # activity conditions
+      where_string += ' AND ciiu_code IN (' + params[:q][:categories].map{|str| "'#{str}'"}.join(',')  + ')' if params[:q][:categories].size > 1
+      # budget conditions
+      where_string += ' AND class_a IN (' + params[:q][:budgets].map(&:to_i).join(',')  + ')' if params[:q][:budgets].size > 1
+      # states conditions
+      where_string += ' AND class_b IN (' + params[:q][:states].map(&:to_i).join(',')  + ')' if params[:q][:states].size > 1
+      # areas conditions
+      where_string += ' AND class_c IN (' + params[:q][:areas].map(&:to_i).join(',')  + ')' if params[:q][:areas].size > 1
+      # employers conditions
+      if (params[:q][:employers].size > 1 rescue false)
+        @custom_employers = DimEmployer.where(nit: params[:q][:employers])
+        where_string += ' AND nit IN (' +params[:q][:employers].map{|str| "'#{str}'"}.join(',')  + ')'
+      end
+      # Proccess or payments conditions
+      where_string += ' AND status = 1' if params[:q][:status].to_i == 1
+      @employments = EmpMonthMatview
+                      .select(select_string)
+                      .where(where_string)
+                      .group(group_string)
+                      .order(group_string)
+      # Extract time periods
+      if @year_selected
+        @uniq_times = @employments.pluck(:year).uniq.sort
+      else
+        @uniq_times = @employments.pluck(:period).uniq.sort
+      end
+    else
+      # Go to default values
+      @employments = EmpMonthMatview
+                      .select('sector, year, sum(total) / 12 as total, sum(amount) / 12 as amount, max(pea) as pea, max(occupied) as occupied')
+                      .where(period: 201501 .. 201601)
+                      .group(:sector, :year)
+                      .order(:sector, :year)
+      @uniq_times = @employments.pluck(:year).uniq
+    end
   end
 
   def export
@@ -15,11 +99,9 @@ class HomeController < ApplicationController
     load_data
     csv_string = CSV.generate(col_sep: ';') do |csv|
 
-
-
       #### TOTAL EMPLEADOS ####
       # first the header
-      header = ['EMPLEOS']
+      header = ['NÚMERO DE EMPLEOS']
       @uniq_times.each do |t|
         header << [t]
       end
@@ -39,9 +121,9 @@ class HomeController < ApplicationController
         # detail of sectors
         if (params[:q][:group_by].to_i != 0 rescue false)
           gnumber = params[:q][:group_by].to_i
-          v.group_by{ |o| gnumber == 1 ? o.class_a : ( gnumber == 2 ? o.class_b : o.class_c ) }.each do |k, v|
+          v.group_by{ |o| gnumber == 1 ? o.ciiu_code : ( gnumber == 2 ? o.class_a : ( gnumber == 3 ? o.class_b : o.class_c ) ) }.each do |k, v|
             row = [
-              (gnumber == 1 ? EmpMonthMatview::INSTITUTIONS[k.to_s] : ( gnumber == 2 ? EmpMonthMatview::AREAS[k.to_s] : EmpMonthMatview::MINISTRIES[k.to_s])) || 'Sin clasificar'
+              (gnumber == 1 ? ciiu_categories[k.to_s] : ( gnumber == 2 ? EmpMonthMatview::BUDGETS[k] : ( gnumber == 3 ? EmpMonthMatview::STATES[k] : EmpMonthMatview::AREAS[k] ))) || 'Sin clasificar'
             ]
             @uniq_times.each_with_index do |t, i|
               employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
@@ -122,9 +204,9 @@ class HomeController < ApplicationController
         # detail of sectors
         if (params[:q][:group_by].to_i != 0 rescue false)
           gnumber = params[:q][:group_by].to_i
-          v.group_by{ |o| gnumber == 1 ? o.class_a : ( gnumber == 2 ? o.class_b : o.class_c ) }.each do |k, v|
+          v.group_by{ |o| gnumber == 1 ? o.ciiu_code : ( gnumber == 2 ? o.class_a : ( gnumber == 3 ? o.class_b : o.class_c ) ) }.each do |k, v|
             row = [
-              (gnumber == 1 ? EmpMonthMatview::INSTITUTIONS[k.to_s] : ( gnumber == 2 ? EmpMonthMatview::AREAS[k.to_s] : EmpMonthMatview::MINISTRIES[k.to_s])) || 'Sin clasificar'
+              (gnumber == 1 ? ciiu_categories[k.to_s] : ( gnumber == 2 ? EmpMonthMatview::BUDGETS[k] : ( gnumber == 3 ? EmpMonthMatview::STATES[k] : EmpMonthMatview::AREAS[k] ))) || 'Sin clasificar'
             ]
             @uniq_times.each_with_index do |t, i|
               employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
@@ -185,7 +267,7 @@ class HomeController < ApplicationController
       csv << ['']
       csv << ['']
       # first the header
-      header = ['PER CAPITA']
+      header = ['SALARIOS PER CAPITA']
       @uniq_times.each do |t|
         header << [t]
       end
@@ -205,9 +287,9 @@ class HomeController < ApplicationController
         # detail of sectors
         if (params[:q][:group_by].to_i != 0 rescue false)
           gnumber = params[:q][:group_by].to_i
-          v.group_by{ |o| gnumber == 1 ? o.class_a : ( gnumber == 2 ? o.class_b : o.class_c ) }.each do |k, v|
+          v.group_by{ |o| gnumber == 1 ? o.ciiu_code : ( gnumber == 2 ? o.class_a : ( gnumber == 3 ? o.class_b : o.class_c ) ) }.each do |k, v|
             row = [
-              (gnumber == 1 ? EmpMonthMatview::INSTITUTIONS[k.to_s] : ( gnumber == 2 ? EmpMonthMatview::AREAS[k.to_s] : EmpMonthMatview::MINISTRIES[k.to_s])) || 'Sin clasificar'
+              (gnumber == 1 ? ciiu_categories[k.to_s] : ( gnumber == 2 ? EmpMonthMatview::BUDGETS[k] : ( gnumber == 3 ? EmpMonthMatview::STATES[k] : EmpMonthMatview::AREAS[k] ))) || 'Sin clasificar'
             ]
             @uniq_times.each_with_index do |t, i|
               employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
@@ -251,7 +333,7 @@ class HomeController < ApplicationController
         end
       end
       # last the total sectors
-      row = ['TOTAL PER CAPITA']
+      row = ['TOTAL SALARIO PER CAPITA']
       @uniq_times.each do |t|
         employments = @year_selected ? @employments.select{|o| o.year.to_i == t.to_i} : @employments.select{|o| o.period.to_i == t.to_i}
         if employments
@@ -288,79 +370,8 @@ class HomeController < ApplicationController
     send_data csv_string, type: 'application/excel', filename: "estadisticas-empleos-#{Date.current.try(:strftime, '%Y%m%d')}.csv", disposition: 'attachment'
   end
 
-  def load_data
-    @times = DimTime.order(:period)
-    @year_selected = true
-    @custom_employers = []
-    if params[:q].present?
-      select_string = ''
-      group_string = ''
-      where_string = ''
-      class_group = ''
-      # group string
-      case params[:q][:group_by]
-        when '1'
-          class_group = ', class_a'
-        when '2'
-          class_group = ', class_b'
-        when '3'
-          class_group = ', class_c'
-        else
-          class_group = ''
-      end
-      # show patrons
-      class_group += ', name' if params[:q][:show_patron].to_i == 1
-      # selected and grouped strings
-      case params[:q][:times]
-      when '1'
-        select_string = "sector#{class_group}, year, sum(total) / 12 as total, sum(amount) / 12 as amount, max(pea) as pea, max(occupied) as occupied"
-        group_string = "sector#{class_group}, year"
-      when '2'
-        select_string = "sector#{class_group}, year, sum(total) as total, sum(amount) as amount, max(pea) as pea, max(occupied) as occupied"
-        group_string = "sector#{class_group}, year"
-      when '3'
-        select_string = "sector#{class_group}, period, avg(total) as total, avg(amount) as amount, max(pea) as pea, max(occupied) as occupied"
-        group_string = "sector#{class_group}, period"
-        @year_selected = false
-      else
-        select_string = "sector#{class_group}, period, sum(total) as total, sum(amount) as amount, max(pea) as pea, max(occupied) as occupied"
-        group_string = "sector#{class_group}, period"
-        @year_selected = false
-      end
-      # time conditions
-      where_string += ' period BETWEEN ' + params[:q][:start_at] + ' AND ' + params[:q][:end_at]
-      # sector conditions
-      where_string += ' AND sector = ' + params[:q][:sector] if params[:q][:sector].present?
-      # institution conditions
-      where_string += ' AND class_a IN (' + params[:q][:institutions].map(&:to_i).join(',')  + ')' if params[:q][:institutions].size > 1
-      # areas conditions
-      where_string += ' AND class_b IN (' + params[:q][:areas].map(&:to_i).join(',')  + ')' if params[:q][:areas].size > 1
-      # ministries conditions
-      where_string += ' AND class_c IN (' + params[:q][:ministries].map(&:to_i).join(',')  + ')' if params[:q][:ministries].size > 1
-      # employers conditions
-      if (params[:q][:employers].size > 1 rescue false)
-        @custom_employers = DimEmployer.where(id: params[:q][:employers])
-        where_string += ' AND employer_id IN (' + params[:q][:employers].map(&:to_i).join(',')  + ')'
-      end
-      @employments = EmpMonthMatview
-                      .select(select_string)
-                      .where(where_string)
-                      .group(group_string)
-                      .order(group_string)
-      # Extract time periods
-      if @year_selected
-        @uniq_times = @employments.pluck(:year).uniq.sort
-      else
-        @uniq_times = @employments.pluck(:period).uniq.sort
-      end
-    else
-      # Go to default values
-      @employments = EmpMonthMatview
-                      .select('sector, year, sum(total) / 12 as total, sum(amount) / 12 as amount, max(pea) as pea, max(occupied) as occupied')
-                      .where(period: 201501 .. 201601)
-                      .group(:sector, :year)
-                      .order(:sector, :year)
-      @uniq_times = @employments.pluck(:year).uniq
-    end
+  def ciiu_categories
+    @ciiu_categories ||= Hash[CiiuCategory.pluck(:code, :name)]
   end
+  helper_method :ciiu_categories
 end

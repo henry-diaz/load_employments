@@ -1,0 +1,2 @@
+class CiiuCategory < ApplicationRecord
+end

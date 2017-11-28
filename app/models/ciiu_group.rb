@@ -1,0 +1,2 @@
+class CiiuGroup < ApplicationRecord
+end

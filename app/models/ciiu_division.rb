@@ -1,0 +1,2 @@
+class CiiuDivision < ApplicationRecord
+end

@@ -10,10 +10,33 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160916154747) do
+ActiveRecord::Schema.define(version: 20171201235685) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "ciiu_activities", force: :cascade do |t|
+    t.integer "ciiu_group_id"
+    t.string  "name"
+    t.index ["ciiu_group_id"], name: "index_ciiu_activities_on_ciiu_group_id", using: :btree
+  end
+
+  create_table "ciiu_categories", force: :cascade do |t|
+    t.string "code", limit: 1
+    t.string "name"
+  end
+
+  create_table "ciiu_divisions", force: :cascade do |t|
+    t.string "category_code", limit: 1
+    t.string "name"
+    t.index ["category_code"], name: "index_ciiu_divisions_on_category_code", using: :btree
+  end
+
+  create_table "ciiu_groups", force: :cascade do |t|
+    t.integer "ciiu_division_id"
+    t.string  "name"
+    t.index ["ciiu_division_id"], name: "index_ciiu_groups_on_ciiu_division_id", using: :btree
+  end
 
   create_table "dim_employers", force: :cascade do |t|
     t.string   "nit"
@@ -27,7 +50,6 @@ ActiveRecord::Schema.define(version: 20160916154747) do
     t.index ["class_a"], name: "index_dim_employers_on_class_a", using: :btree
     t.index ["class_b"], name: "index_dim_employers_on_class_b", using: :btree
     t.index ["class_c"], name: "index_dim_employers_on_class_c", using: :btree
-    t.index ["name"], name: "dim_employers_name", using: :btree
     t.index ["sector"], name: "index_dim_employers_on_sector", using: :btree
   end
 
@@ -67,23 +89,71 @@ ActiveRecord::Schema.define(version: 20160916154747) do
     t.index ["dim_time_id"], name: "index_fact_employments_on_dim_time_id", using: :btree
   end
 
+  create_table "tmp_detalle_planillas", force: :cascade do |t|
+    t.integer  "idPlanilla"
+    t.integer  "anyo"
+    t.integer  "mes"
+    t.string   "nitPatrono"
+    t.string   "noAfiliacionTrabajador"
+    t.decimal  "montoSalario",            precision: 12, scale: 2
+    t.decimal  "montoPagoAdicional",      precision: 12, scale: 2
+    t.decimal  "montoVacacion",           precision: 12, scale: 2
+    t.decimal  "montoPresentado",         precision: 12, scale: 2
+    t.string   "codigoObservacion"
+    t.string   "estadoProcesamiento"
+    t.text     "comentarioProcesamiento"
+    t.datetime "created_at",                                       null: false
+    t.datetime "updated_at",                                       null: false
+    t.index ["idPlanilla"], name: "index_tmp_detalle_planillas_on_idPlanilla", using: :btree
+  end
+
   create_table "tmp_employments", force: :cascade do |t|
     t.integer  "anyo"
     t.integer  "mes"
     t.string   "nit"
-    t.integer  "altasTrabajadores",                          default: 0
-    t.decimal  "altasSalarios",     precision: 12, scale: 2
-    t.integer  "bajasTrabajadores",                          default: 0
-    t.decimal  "bajasSalarios",     precision: 12, scale: 2
-    t.integer  "pensionados",                                default: 0
-    t.integer  "totalTrabajadores",                          default: 0
-    t.decimal  "salarios",          precision: 12, scale: 2
+    t.integer  "altasTrabajadores",                                         default: 0
+    t.decimal  "altasSalarios",                    precision: 12, scale: 2
+    t.integer  "bajasTrabajadores",                                         default: 0
+    t.decimal  "bajasSalarios",                    precision: 12, scale: 2
+    t.integer  "pensionados",                                               default: 0
+    t.integer  "totalTrabajadores",                                         default: 0
+    t.decimal  "salarios",                         precision: 12, scale: 2
     t.string   "nombre"
-    t.datetime "created_at",                                                 null: false
-    t.datetime "updated_at",                                                 null: false
-    t.string   "state",                                      default: "new"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "state",                                                     default: "new"
     t.text     "comment"
+    t.string   "idPlanilla"
+    t.integer  "periodo"
+    t.string   "noPatronal",             limit: 9
+    t.integer  "correlativoCT"
+    t.integer  "ciiu4"
+    t.integer  "ciiu3"
+    t.integer  "sector"
+    t.integer  "tipoSociedad"
+    t.integer  "estadoPlanilla"
+    t.string   "conceptoEstadoPlanilla", limit: 9
+    t.integer  "class_a"
+    t.integer  "class_b"
+    t.integer  "class_c"
+    t.index ["ciiu3"], name: "index_tmp_employments_on_ciiu3", using: :btree
+    t.index ["ciiu4"], name: "index_tmp_employments_on_ciiu4", using: :btree
+    t.index ["noPatronal"], name: "index_tmp_employments_on_noPatronal", using: :btree
+    t.index ["sector"], name: "index_tmp_employments_on_sector", using: :btree
     t.index ["state"], name: "index_tmp_employments_on_state", using: :btree
+  end
+
+  create_table "tmp_planillas", force: :cascade do |t|
+    t.integer  "idPlanilla"
+    t.string   "noPatronal"
+    t.string   "nombrePatrono"
+    t.string   "nit"
+    t.integer  "estado"
+    t.string   "estadoProcesamiento"
+    t.text     "comentarioProcesamiento"
+    t.datetime "created_at",              null: false
+    t.datetime "updated_at",              null: false
+    t.index ["idPlanilla"], name: "index_tmp_planillas_on_idPlanilla", using: :btree
   end
 
   add_foreign_key "fact_employments", "dim_employers"

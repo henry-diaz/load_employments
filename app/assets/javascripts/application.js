@@ -5,6 +5,10 @@
 //= require_tree .
 
 $(function(){
+  $( ".select2-activities" ).select2({
+    theme: "bootstrap",
+    placeholder: "Todas las actividades"
+  });
   $( ".select2-institutions" ).select2({
     theme: "bootstrap",
     placeholder: "Todas las instituciones"

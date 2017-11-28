@@ -1,0 +1,2 @@
+class CiiuActivity < ApplicationRecord
+end
