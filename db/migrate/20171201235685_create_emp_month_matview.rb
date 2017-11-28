@@ -54,13 +54,15 @@ class CreateEmpMonthMatview < ActiveRecord::Migration[5.0]
       -- INNER JOIN dim_employers e ON e.id = f.dim_employer_id
     SQL
     execute <<-SQL
-      CREATE INDEX emp_month_matview_nit ON emp_month_matview (id);
-      -- CREATE INDEX emp_month_matview_name ON emp_month_matview (name);
-      -- CREATE INDEX emp_month_matview_period ON emp_month_matview (period);
-      -- CREATE INDEX emp_month_matview_sector ON emp_month_matview (sector);
-      -- CREATE INDEX emp_month_matview_class_a ON emp_month_matview (class_a);
-      -- CREATE INDEX emp_month_matview_class_b ON emp_month_matview (class_b);
-      -- CREATE INDEX emp_month_matview_class_c ON emp_month_matview (class_c);
+      CREATE INDEX emp_month_matview_id ON emp_month_matview (id);
+      CREATE INDEX emp_month_matview_nit ON emp_month_matview (nit);
+      CREATE INDEX emp_month_matview_ciiu ON emp_month_matview (ciiu_code);
+      CREATE INDEX emp_month_matview_name ON emp_month_matview (name);
+      CREATE INDEX emp_month_matview_period ON emp_month_matview (period);
+      CREATE INDEX emp_month_matview_sector ON emp_month_matview (sector);
+      CREATE INDEX emp_month_matview_class_a ON emp_month_matview (class_a);
+      CREATE INDEX emp_month_matview_class_b ON emp_month_matview (class_b);
+      CREATE INDEX emp_month_matview_class_c ON emp_month_matview (class_c);
     SQL
   end
 
