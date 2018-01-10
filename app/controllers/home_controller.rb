@@ -39,7 +39,7 @@ class HomeController < ApplicationController
       # selected and grouped strings
       case params[:q][:times]
       when '1'
-        select_string = "sector#{class_group}, year, sum(total) / 12 as total, sum(amount) / 12 as amount, max(pea) as pea, max(occupied) as occupied"
+        select_string = "sector#{class_group}, year, sum(total) / max(month) as total, sum(amount) / max(month) as amount, max(pea) as pea, max(occupied) as occupied"
         group_string = "sector#{class_group}, year"
       when '2'
         select_string = "sector#{class_group}, year, sum(total) as total, sum(amount) as amount, max(pea) as pea, max(occupied) as occupied"
@@ -86,7 +86,7 @@ class HomeController < ApplicationController
     else
       # Go to default values
       @employments = EmpMonthMatview
-                      .select('sector, year, sum(total) / 12 as total, sum(amount) / 12 as amount, max(pea) as pea, max(occupied) as occupied')
+                      .select('sector, year, sum(total) / max(month) as total, sum(amount) / max(month) as amount, max(pea) as pea, max(occupied) as occupied')
                       .where(period: 201501 .. 201601)
                       .group(:sector, :year)
                       .order(:sector, :year)
@@ -97,7 +97,7 @@ class HomeController < ApplicationController
   def export
     require 'csv'
     load_data
-    csv_string = CSV.generate(col_sep: ';') do |csv|
+    csv_string = CSV.generate(col_sep: ',') do |csv|
 
       #### TOTAL EMPLEADOS ####
       # first the header
