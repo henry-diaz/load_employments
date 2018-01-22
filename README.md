@@ -1,12 +1,12 @@
 1. LOAD INFO FROM CSV IN TERMINAL (~15m)
 
-IMPFILES=(/var/lib/postgresql/csv/*.csv)
+IMPFILES=(/var/lib/postgresql/csv_isss/*.csv)
 
 for i in ${IMPFILES[@]}
 do
-  psql -d ovisss_development -c "COPY tmp_employments(\"idPlanilla\", periodo, \"noPatronal\", nombre, nit, \"correlativoCT\", ciiu4, ciiu3, sector, \"tipoSociedad\", \"altasTrabajadores\", \"bajasTrabajadores\", \"altasSalarios\", \"totalTrabajadores\", pensionados, salarios, \"estadoPlanilla\", \"conceptoEstadoPlanilla\") from '$i' CSV HEADER"
+  psql -d ovisss -c "COPY tmp_employments(\"idPlanilla\", periodo, \"noPatronal\", nombre, nit, \"correlativoCT\", ciiu4, ciiu3, sector, \"tipoSociedad\", \"altasTrabajadores\", \"bajasTrabajadores\", \"altasSalarios\", \"totalTrabajadores\", pensionados, salarios, \"estadoPlanilla\", \"conceptoEstadoPlanilla\") from '$i' CSV HEADER"
   # move the imported file
-  mv $i /var/lib/postgresql/csv/cargados
+  mv $i /var/lib/postgresql/csv_isss/cargados
 done
 
 2. UPDATE DATE COLUMNS (~32m)
@@ -15,17 +15,17 @@ update tmp_employments set anyo=SUBSTR(periodo::text, 1,4)::int, mes=SUBSTR(peri
 
 3. LOAD CIIU4 MASTERS
 
-psql -d ovisss_development -c "COPY ciiu_activities(id, ciiu_group_id, name) from '/var/lib/postgresql/ciiu/ciiu4_actividad_economica.csv' CSV HEADER"
-psql -d ovisss_development -c "COPY ciiu_categories(code, name) from '/var/lib/postgresql/ciiu/ciiu4_categorias.csv' CSV HEADER"
-psql -d ovisss_development -c "COPY ciiu_divisions(id, category_code, name) from '/var/lib/postgresql/ciiu/ciiu4_divisiones.csv' CSV HEADER"
-psql -d ovisss_development -c "COPY ciiu_groups(id, ciiu_division_id, name) from '/var/lib/postgresql/ciiu/ciiu4_grupos.csv' CSV HEADER"
+psql -d ovisss -c "COPY ciiu_activities(id, ciiu_group_id, name) from '/var/lib/postgresql/ciiu/ciiu4_actividad_economica.csv' CSV HEADER"
+psql -d ovisss -c "COPY ciiu_categories(code, name) from '/var/lib/postgresql/ciiu/ciiu4_categorias.csv' CSV HEADER"
+psql -d ovisss -c "COPY ciiu_divisions(id, category_code, name) from '/var/lib/postgresql/ciiu/ciiu4_divisiones.csv' CSV HEADER"
+psql -d ovisss -c "COPY ciiu_groups(id, ciiu_division_id, name) from '/var/lib/postgresql/ciiu/ciiu4_grupos.csv' CSV HEADER"
 
 4. LOAD EMPLOYERS
 
-psql -d ovisss_development -c "truncate table dim_employers cascade"
-psql -d ovisss_development -c "insert into dim_employers(nit, name, created_at, updated_at) select distinct on ( nit, nombre ) nit, nombre, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP from tmp_employments order by nombre;"
-psql -d ovisss_development -c "truncate table dim_times cascade"
-psql -d ovisss_development -c "insert into dim_times(period,year,month,created_at,updated_at) select distinct on (periodo) periodo, anyo, mes, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP from tmp_employments order by periodo asc;"
+psql -d ovisss -c "truncate table dim_employers cascade"
+psql -d ovisss -c "insert into dim_employers(nit, name, created_at, updated_at) select distinct on ( nit, nombre ) nit, nombre, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP from tmp_employments order by nombre;"
+psql -d ovisss -c "truncate table dim_times cascade"
+psql -d ovisss -c "insert into dim_times(period,year,month,created_at,updated_at) select distinct on (periodo) periodo, anyo, mes, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP from tmp_employments order by periodo asc;"
 
 5. PUBLIC CLASSIFICATION
 
