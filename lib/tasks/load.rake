@@ -111,7 +111,7 @@ namespace :load do
   task geo: [:environment] do
     i = 0
     csv_path = "#{Rails.root.to_s}/db/geo.csv"
-    name = 'GEO'
+    name = 'LA GEO'
     nit = '04040404040404'
     patronal = '040404040'
     employer = DimEmployer.where(nit: nit).first_or_create(name: name)
