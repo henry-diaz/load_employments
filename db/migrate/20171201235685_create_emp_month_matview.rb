@@ -13,7 +13,16 @@ class CreateEmpMonthMatview < ActiveRecord::Migration[5.0]
              ELSE 1
         END as sector,
         e.sector as sector_detail,
-        cat.code as ciiu_code,
+        (SELECT cat.code from ciiu_categories cat
+        INNER JOIN ciiu_divisions div on div.category_code = cat.code
+        INNER JOIN ciiu_groups grp on grp.ciiu_division_id = div.id
+        INNER JOIN ciiu_activities act on act.ciiu_group_id = grp.id
+        WHERE act.id = e.ciiu4) as ciiu4_code,
+        (SELECT cat.code from ciiu3_categories cat
+        INNER JOIN ciiu3_divisions div on div.category_code = cat.code
+        INNER JOIN ciiu3_groups grp on grp.ciiu3_division_id = div.id
+        INNER JOIN ciiu3_activities act on act.ciiu3_group_id = grp.id
+        WHERE act.id = e.ciiu3) as ciiu3_code,
         e.class_a as class_a,
         e.class_b as class_b,
         e.class_c as class_c,
@@ -25,44 +34,22 @@ class CreateEmpMonthMatview < ActiveRecord::Migration[5.0]
         e."totalTrabajadores" as total,
         e.salarios as amount,
         (SELECT pea from fact_digestics where year = e.anyo) as pea,
-        (SELECT occupied from fact_digestics where year = e.anyo) as occupied
+        (SELECT occupied from fact_digestics where year = e.anyo) as occupied,
+        e.source as source
         FROM tmp_employments e
-        INNER JOIN ciiu_activities act on e.ciiu4 = act.id
-        INNER JOIN ciiu_groups grp on act.ciiu_group_id = grp.id
-        INNER JOIN ciiu_divisions div on grp.ciiu_division_id = div.id
-        INNER JOIN ciiu_categories cat on div.category_code = cat.code
-
-      -- CREATE MATERIALIZED VIEW emp_month_matview AS
-      --   SELECT
-      --   e.id as employer_id,
-      --   e.nit as nit,
-      --   e.name as name,
-      --   e.sector as sector,
-      --   e.class_a as class_a,
-      --   e.class_b as class_b,
-      --   e.class_c as class_c,
-      --   t.period as period,
-      --   t.year as year,
-      --   t.month as month,
-      --   f.total as total,
-      --   f.amount as amount,
-      --   round(COALESCE(f.amount / NULLIF(f.total, 0)), 2) as per_capita,
-      --   (SELECT pea from fact_digestics where year = t.year) as pea,
-      --   (SELECT occupied from fact_digestics where year = t.year) as occupied
-      -- FROM fact_employments f
-      -- INNER JOIN dim_times t ON t.id = f.dim_time_id
-      -- INNER JOIN dim_employers e ON e.id = f.dim_employer_id
     SQL
     execute <<-SQL
       CREATE INDEX emp_month_matview_id ON emp_month_matview (id);
       CREATE INDEX emp_month_matview_nit ON emp_month_matview (nit);
-      CREATE INDEX emp_month_matview_ciiu ON emp_month_matview (ciiu_code);
+      CREATE INDEX emp_month_matview_ciiu4 ON emp_month_matview (ciiu4_code);
+      CREATE INDEX emp_month_matview_ciiu3 ON emp_month_matview (ciiu3_code);
       CREATE INDEX emp_month_matview_name ON emp_month_matview (name);
       CREATE INDEX emp_month_matview_period ON emp_month_matview (period);
       CREATE INDEX emp_month_matview_sector ON emp_month_matview (sector);
       CREATE INDEX emp_month_matview_class_a ON emp_month_matview (class_a);
       CREATE INDEX emp_month_matview_class_b ON emp_month_matview (class_b);
       CREATE INDEX emp_month_matview_class_c ON emp_month_matview (class_c);
+      CREATE INDEX emp_month_matview_source ON emp_month_matview (source);
     SQL
   end
 

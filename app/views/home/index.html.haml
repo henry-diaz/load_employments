@@ -4,13 +4,25 @@
       .form-group
         %label
           %strong
+            Fuente
+        %br
+        %label.radio-inline
+          = f.radio_button :source, 1, checked: (params[:q][:source].to_i == 1 rescue true)
+          Estadística
+        &nbsp
+        %label.radio-inline
+          = f.radio_button :source, 0, checked: (params[:q][:source].to_i == 0 rescue false)
+          Informática
+      .form-group
+        %label
+          %strong
             Sectores
         = f.select :sector, options_for_select(EmpMonthMatview::SECTORS.invert, (params[:q][:sector] rescue '')), { }, { class: 'form-control' }
       .form-group
         %label
           %strong
             Rama de Actividad Económica
-        = f.collection_select :categories, CiiuCategory.all, :code, :name, { selected: (params[:q][:categories] rescue '') }, {class: 'form-control select2-activities', multiple: true}
+        = f.collection_select :categories, @ciuu_categories, :code, :name, { selected: (params[:q][:categories] rescue '') }, {class: 'form-control select2-activities', multiple: true}
       .form-group
         %label
           %strong
@@ -52,14 +64,15 @@
           %strong
             Desagregado por
         = f.select :group_by, options_for_select(EmpMonthMatview::GROUP_BY.invert, (params[:q][:group_by] rescue '0')), {}, {class: 'form-control'}
-      %div
-        %label.radio-inline
-          = f.radio_button :status, 0, checked: (params[:q][:status].to_i == 0 rescue true)
-          Presentadas
-        &nbsp
-        %label.radio-inline
-          = f.radio_button :status, 1, checked: (params[:q][:status].to_i == 1 rescue false)
-          Pagadas
+      - if @source == 'tic'
+        %div
+          %label.radio-inline
+            = f.radio_button :status, 0, checked: (params[:q][:status].to_i == 0 rescue true)
+            Presentadas
+          &nbsp
+          %label.radio-inline
+            = f.radio_button :status, 1, checked: (params[:q][:status].to_i == 1 rescue false)
+            Pagadas
       .checkbox
         %label
           = f.check_box :show_patron, { checked: (params[:q][:show_patron] == '1' rescue false) }, '1', '0'

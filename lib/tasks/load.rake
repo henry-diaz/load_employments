@@ -1,5 +1,6 @@
 require 'csv'
 namespace :load do
+  
   desc 'Carga de bienestar magisterial'
   task isbm: [:environment] do
     i = 0

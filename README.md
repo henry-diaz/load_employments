@@ -20,7 +20,7 @@ psql -d ovisss -c "COPY ciiu_categories(code, name) from '/var/lib/postgresql/ci
 psql -d ovisss -c "COPY ciiu_divisions(id, category_code, name) from '/var/lib/postgresql/ciiu/ciiu4_divisiones.csv' CSV HEADER"
 psql -d ovisss -c "COPY ciiu_groups(id, ciiu_division_id, name) from '/var/lib/postgresql/ciiu/ciiu4_grupos.csv' CSV HEADER"
 
-4. LOAD EMPLOYERS
+4. LOAD EMPLOYERS AND TIMES
 
 psql -d ovisss -c "truncate table dim_employers cascade"
 psql -d ovisss -c "insert into dim_employers(nit, name, created_at, updated_at) select distinct on ( nit, nombre ) nit, nombre, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP from tmp_employments order by nombre;"
@@ -36,6 +36,52 @@ RAILS_ENV=production bundle exec rake load:geo
 RAILS_ENV=production bundle exec rake load:digestic
 RAILS_ENV=production bundle exec rake load:classifications
 
+
+##
+# DAE SUPPORT
+
+6. LOAD DAE INFO INTO DATABASE (Move salaries temporarily to comment field)
+
+IMPFILES=(/var/lib/postgresql/csv_dae/*.csv)
+
+for i in ${IMPFILES[@]}
+do
+  psql -d ovisss_development -c "COPY tmp_employments(\"noPatronal\", nombre, ciiu3, sector, \"deptoMunic\", \"totalTrabajadores\", comment, periodo, nit, source) from '$i' DELIMITER ';' CSV HEADER"
+  # move the imported file
+  mv $i /var/lib/postgresql/csv_dae/cargados
+done
+
+7. ADD SALARIES FIELD TO DAE IMPORT DATA (~37m)
+
+update tmp_employments set salarios = replace(comment,',','.')::numeric where source = 1;
+
+8. REMOVE COMMENT FIELD OF DAE IMPORT DATA AND SET ANYO, YEAR FIELD
+
+update tmp_employments set anyo=SUBSTR(periodo::text, 1,4)::int, mes=SUBSTR(periodo::text, 5,2)::int, comment=null where source=1;
+
+9. LOAD CIIU3 CATALOGS
+
+psql -d ovisss_development -c "COPY ciiu3_activities(id, ciiu3_group_id, name) from '/var/lib/postgresql/ciiu/ciiu3_actividades.csv' CSV HEADER"
+psql -d ovisss_development -c "COPY ciiu3_categories(code, name) from '/var/lib/postgresql/ciiu/ciiu3_categorias.csv' CSV HEADER"
+psql -d ovisss_development -c "COPY ciiu3_divisions(id, category_code, name) from '/var/lib/postgresql/ciiu/ciiu3_divisiones.csv' CSV HEADER"
+psql -d ovisss_development -c "COPY ciiu3_groups(id, ciiu3_division_id, name) from '/var/lib/postgresql/ciiu/ciiu3_grupos.csv' CSV HEADER"
+
+10. UPDATE NIT TO PATRONS WITH NULL VALUE IN THE NEW SOURCE
+
+update tmp_employments e set nit = (select nit from tmp_employments where "noPatronal" = e."noPatronal" and nit is not null limit 1) where source = 1 and nit is null;
+
+11. RE RUN THE EMPLOYERS LOAD
+
+psql -d ovisss_development -c "truncate table dim_employers cascade"
+psql -d ovisss_development -c "insert into dim_employers(nit, name, created_at, updated_at) select distinct on ( nit, nombre ) nit, nombre, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP from tmp_employments order by nombre;"
+
+12. UPDATE SOURCE OF THE MANUALLY ADDED INSTITUTIONS
+
+psql -d ovisss_development -c "update tmp_employments set source = 2 where nit in ('01010101010101', '02020202020202', '03030303030303', '04040404040404');"
+
+13. RE RUN PUBLIC CLASSIFICATION
+
+RAILS_ENV=production bundle exec rake load:classifications
 
 
 CATÁLOGO DE SECTORES:
@@ -78,3 +124,7 @@ U	Actividades de organizaciones y órganos extraterritoriales
 CATALOGO DE STATUS:
 0 Procesada
 1 Pagada
+
+SOURCE
+0 DTIC
+1 DAE

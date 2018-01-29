@@ -24,7 +24,7 @@ class HomeController < ApplicationController
       # group string
       case params[:q][:group_by]
         when '1'
-          class_group = ', ciiu_code'
+          class_group = ', ciiu4_code'
         when '2'
           class_group = ', class_a'
         when '3'
@@ -57,8 +57,6 @@ class HomeController < ApplicationController
       where_string += ' period BETWEEN ' + params[:q][:start_at] + ' AND ' + params[:q][:end_at]
       # sector conditions
       where_string += ' AND sector = ' + params[:q][:sector] if params[:q][:sector].present?
-      # activity conditions
-      where_string += ' AND ciiu_code IN (' + params[:q][:categories].map{|str| "'#{str}'"}.join(',')  + ')' if params[:q][:categories].size > 1
       # budget conditions
       where_string += ' AND class_a IN (' + params[:q][:budgets].map(&:to_i).join(',')  + ')' if params[:q][:budgets].size > 1
       # states conditions
@@ -70,8 +68,24 @@ class HomeController < ApplicationController
         @custom_employers = DimEmployer.where(nit: params[:q][:employers])
         where_string += ' AND nit IN (' +params[:q][:employers].map{|str| "'#{str}'"}.join(',')  + ')'
       end
-      # Proccess or payments conditions
-      where_string += ' AND status = 1' if params[:q][:status].to_i == 1
+
+      ###
+      # Getting the source and its peculiarities
+      if params[:q][:source].to_i == 0
+        # DTIC
+        @source = 'tic'
+        where_string += ' AND source in (0, 2)'
+        where_string += ' AND status = 1' if params[:q][:status].to_i == 1 # Proccess or payments conditions
+        where_string += ' AND ciiu4_code IN (' + params[:q][:categories].map{|str| "'#{str}'"}.join(',')  + ')' if params[:q][:categories].size > 1
+        @ciuu_categories = CiiuCategory.all
+      else
+        # DAE
+        @source = 'dae'
+        where_string += ' AND source in (1, 2)'
+        where_string += ' AND ciiu3_code IN (' + params[:q][:categories].map{|str| "'#{str}'"}.join(',')  + ')' if params[:q][:categories].size > 1
+        @ciuu_categories = Ciiu3Category.all
+      end
+
       @employments = EmpMonthMatview
                       .select(select_string)
                       .where(where_string)
@@ -88,9 +102,11 @@ class HomeController < ApplicationController
       @employments = EmpMonthMatview
                       .select('sector, year, sum(total) / max(month) as total, sum(amount) / max(month) as amount, max(pea) as pea, max(occupied) as occupied')
                       .where(period: 201501 .. 201601)
+                      .where(source: [1,2]) # Default source statistics and customs
                       .group(:sector, :year)
                       .order(:sector, :year)
       @uniq_times = @employments.pluck(:year).uniq
+      @ciuu_categories = Ciiu3Category.all
     end
   end
 

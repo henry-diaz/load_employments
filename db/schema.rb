@@ -10,10 +10,33 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171201235656) do
+ActiveRecord::Schema.define(version: 20180126161647) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "ciiu3_activities", force: :cascade do |t|
+    t.integer "ciiu3_group_id"
+    t.string  "name"
+    t.index ["ciiu3_group_id"], name: "index_ciiu3_activities_on_ciiu3_group_id", using: :btree
+  end
+
+  create_table "ciiu3_categories", force: :cascade do |t|
+    t.string "code", limit: 1
+    t.string "name"
+  end
+
+  create_table "ciiu3_divisions", force: :cascade do |t|
+    t.string "category_code", limit: 1
+    t.string "name"
+    t.index ["category_code"], name: "index_ciiu3_divisions_on_category_code", using: :btree
+  end
+
+  create_table "ciiu3_groups", force: :cascade do |t|
+    t.integer "ciiu3_division_id"
+    t.string  "name"
+    t.index ["ciiu3_division_id"], name: "index_ciiu3_groups_on_ciiu3_division_id", using: :btree
+  end
 
   create_table "ciiu_activities", force: :cascade do |t|
     t.integer "ciiu_group_id"
@@ -136,10 +159,13 @@ ActiveRecord::Schema.define(version: 20171201235656) do
     t.integer  "class_a"
     t.integer  "class_b"
     t.integer  "class_c"
+    t.integer  "source",                                                    default: 0
+    t.string   "deptoMunic",             limit: 4,                          default: ""
     t.index ["ciiu3"], name: "index_tmp_employments_on_ciiu3", using: :btree
     t.index ["ciiu4"], name: "index_tmp_employments_on_ciiu4", using: :btree
     t.index ["noPatronal"], name: "index_tmp_employments_on_noPatronal", using: :btree
     t.index ["sector"], name: "index_tmp_employments_on_sector", using: :btree
+    t.index ["source"], name: "index_tmp_employments_on_source", using: :btree
     t.index ["state"], name: "index_tmp_employments_on_state", using: :btree
   end
 
