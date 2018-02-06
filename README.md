@@ -46,7 +46,7 @@ IMPFILES=(/var/lib/postgresql/csv_dae/*.csv)
 
 for i in ${IMPFILES[@]}
 do
-  psql -d ovisss_development -c "COPY tmp_employments(\"noPatronal\", nombre, ciiu3, sector, \"deptoMunic\", \"totalTrabajadores\", comment, periodo, nit, source) from '$i' DELIMITER ';' CSV HEADER"
+  psql -d ovisss -c "COPY tmp_employments(\"noPatronal\", nombre, ciiu3, sector, \"deptoMunic\", \"totalTrabajadores\", comment, periodo, nit, source) from '$i' DELIMITER ';' CSV HEADER"
   # move the imported file
   mv $i /var/lib/postgresql/csv_dae/cargados
 done
@@ -61,10 +61,10 @@ update tmp_employments set anyo=SUBSTR(periodo::text, 1,4)::int, mes=SUBSTR(peri
 
 9. LOAD CIIU3 CATALOGS
 
-psql -d ovisss_development -c "COPY ciiu3_activities(id, ciiu3_group_id, name) from '/var/lib/postgresql/ciiu/ciiu3_actividades.csv' CSV HEADER"
-psql -d ovisss_development -c "COPY ciiu3_categories(code, name) from '/var/lib/postgresql/ciiu/ciiu3_categorias.csv' CSV HEADER"
-psql -d ovisss_development -c "COPY ciiu3_divisions(id, category_code, name) from '/var/lib/postgresql/ciiu/ciiu3_divisiones.csv' CSV HEADER"
-psql -d ovisss_development -c "COPY ciiu3_groups(id, ciiu3_division_id, name) from '/var/lib/postgresql/ciiu/ciiu3_grupos.csv' CSV HEADER"
+psql -d ovisss -c "COPY ciiu3_activities(id, ciiu3_group_id, name) from '/var/lib/postgresql/ciiu/ciiu3_actividades.csv' CSV HEADER"
+psql -d ovisss -c "COPY ciiu3_categories(code, name) from '/var/lib/postgresql/ciiu/ciiu3_categorias.csv' CSV HEADER"
+psql -d ovisss -c "COPY ciiu3_divisions(id, category_code, name) from '/var/lib/postgresql/ciiu/ciiu3_divisiones.csv' CSV HEADER"
+psql -d ovisss -c "COPY ciiu3_groups(id, ciiu3_division_id, name) from '/var/lib/postgresql/ciiu/ciiu3_grupos.csv' CSV HEADER"
 
 10. UPDATE NIT TO PATRONS WITH NULL VALUE IN THE NEW SOURCE
 
@@ -72,17 +72,22 @@ update tmp_employments e set nit = (select nit from tmp_employments where "noPat
 
 11. RE RUN THE EMPLOYERS LOAD
 
-psql -d ovisss_development -c "truncate table dim_employers cascade"
-psql -d ovisss_development -c "insert into dim_employers(nit, name, created_at, updated_at) select distinct on ( nit, nombre ) nit, nombre, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP from tmp_employments order by nombre;"
+psql -d ovisss -c "truncate table dim_employers cascade"
+psql -d ovisss -c "insert into dim_employers(nit, name, created_at, updated_at) select distinct on ( nit, nombre ) nit, nombre, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP from tmp_employments order by nombre;"
 
 12. UPDATE SOURCE OF THE MANUALLY ADDED INSTITUTIONS
 
-psql -d ovisss_development -c "update tmp_employments set source = 2 where nit in ('01010101010101', '02020202020202', '03030303030303', '04040404040404');"
+psql -d ovisss -c "update tmp_employments set source = 2 where nit in ('01010101010101', '02020202020202', '03030303030303', '04040404040404');"
 
 13. RE RUN PUBLIC CLASSIFICATION
 
 RAILS_ENV=production bundle exec rake load:classifications
 
+
+CATÁLOGO DE SOURCES
+0 Dirección de tecnología (DTIC)
+1 Dirección de Actuariado y Estadística (DAE)
+2 Fuentes gestionadas por nosotros (GEO, )
 
 CATÁLOGO DE SECTORES:
 0 Privado
