@@ -70,14 +70,14 @@ class HomeController < ApplicationController
         @source = 'tic'
         where_string += ' AND source in (0, 2)'
         where_string += ' AND status = 1' if params[:q][:status].to_i == 1 # Proccess or payments conditions
-        where_string += ' AND ciiu4_code IN (' + params[:q][:categories].map{|str| "'#{str}'"}.join(',')  + ')' if params[:q][:categories].size > 1
+        where_string += ' AND ciiu4_code IN (' + params[:q][:categories].map{|str| "'#{str}'"}.join(',')  + ')' if params[:q][:categories] && params[:q][:categories].size > 1
         @ciuu_categories = CiiuCategory.all
         # budget conditions
-        where_string += ' AND class_a IN (' + params[:q][:budgets].map(&:to_i).join(',')  + ')' if params[:q][:budgets].size > 1
+        where_string += ' AND class_a IN (' + params[:q][:budgets].map(&:to_i).join(',')  + ')' if params[:q][:budgets] && params[:q][:budgets].size > 1
         # states conditions
-        where_string += ' AND class_b IN (' + params[:q][:states].map(&:to_i).join(',')  + ')' if params[:q][:states].size > 1
+        where_string += ' AND class_b IN (' + params[:q][:states].map(&:to_i).join(',')  + ')' if params[:q][:states] && params[:q][:states].size > 1
         # areas conditions
-        where_string += ' AND class_c IN (' + params[:q][:areas].map(&:to_i).join(',')  + ')' if params[:q][:areas].size > 1
+        where_string += ' AND class_c IN (' + params[:q][:areas].map(&:to_i).join(',')  + ')' if params[:q][:areas] && params[:q][:areas].size > 1
       else
         # DAE
         @source = 'dae'
