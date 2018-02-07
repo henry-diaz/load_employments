@@ -57,12 +57,6 @@ class HomeController < ApplicationController
       where_string += ' period BETWEEN ' + params[:q][:start_at] + ' AND ' + params[:q][:end_at]
       # sector conditions
       where_string += ' AND sector = ' + params[:q][:sector] if params[:q][:sector].present?
-      # budget conditions
-      where_string += ' AND class_a IN (' + params[:q][:budgets].map(&:to_i).join(',')  + ')' if params[:q][:budgets].size > 1
-      # states conditions
-      where_string += ' AND class_b IN (' + params[:q][:states].map(&:to_i).join(',')  + ')' if params[:q][:states].size > 1
-      # areas conditions
-      where_string += ' AND class_c IN (' + params[:q][:areas].map(&:to_i).join(',')  + ')' if params[:q][:areas].size > 1
       # employers conditions
       if (params[:q][:employers].size > 1 rescue false)
         @custom_employers = DimEmployer.where(nit: params[:q][:employers])
@@ -78,6 +72,12 @@ class HomeController < ApplicationController
         where_string += ' AND status = 1' if params[:q][:status].to_i == 1 # Proccess or payments conditions
         where_string += ' AND ciiu4_code IN (' + params[:q][:categories].map{|str| "'#{str}'"}.join(',')  + ')' if params[:q][:categories].size > 1
         @ciuu_categories = CiiuCategory.all
+        # budget conditions
+        where_string += ' AND class_a IN (' + params[:q][:budgets].map(&:to_i).join(',')  + ')' if params[:q][:budgets].size > 1
+        # states conditions
+        where_string += ' AND class_b IN (' + params[:q][:states].map(&:to_i).join(',')  + ')' if params[:q][:states].size > 1
+        # areas conditions
+        where_string += ' AND class_c IN (' + params[:q][:areas].map(&:to_i).join(',')  + ')' if params[:q][:areas].size > 1
       else
         # DAE
         @source = 'dae'
