@@ -23,21 +23,22 @@
           %strong
             Rama de Actividad Económica
         = f.collection_select :categories, @ciuu_categories, :code, :name, { selected: (params[:q][:categories] rescue '') }, {class: 'form-control select2-activities', multiple: true}
-      .form-group
-        %label
-          %strong
-            De acuerdo a ley de presupuesto
-        = f.select :budgets, options_for_select(EmpMonthMatview::BUDGETS.invert, (params[:q][:budgets] rescue '')), {}, { class: 'form-control select2-institutions', multiple: true }
-      .form-group
-        %label
-          %strong
-            Por Organos del Estado
-        = f.select :states, options_for_select(EmpMonthMatview::STATES.invert, (params[:q][:states] rescue '')), {}, { class: 'form-control  select2-areas', multiple: true }
-      .form-group
-        %label
-          %strong
-            Por áreas de gestión
-        = f.select :areas, options_for_select(EmpMonthMatview::AREAS.invert, (params[:q][:areas] rescue '')), {}, { class: 'form-control  select2-ministries', multiple: true }
+      - if @source == 'tic'
+        .form-group
+          %label
+            %strong
+              De acuerdo a ley de presupuesto
+          = f.select :budgets, options_for_select(EmpMonthMatview::BUDGETS.invert, (params[:q][:budgets] rescue '')), {}, { class: 'form-control select2-institutions', multiple: true }
+        .form-group
+          %label
+            %strong
+              Por Organos del Estado
+          = f.select :states, options_for_select(EmpMonthMatview::STATES.invert, (params[:q][:states] rescue '')), {}, { class: 'form-control  select2-areas', multiple: true }
+        .form-group
+          %label
+            %strong
+              Por áreas de gestión
+          = f.select :areas, options_for_select(EmpMonthMatview::AREAS.invert, (params[:q][:areas] rescue '')), {}, { class: 'form-control  select2-ministries', multiple: true }
       .form-group
         %label
           %strong
