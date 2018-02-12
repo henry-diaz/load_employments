@@ -24,7 +24,11 @@ class HomeController < ApplicationController
       # group string
       case params[:q][:group_by]
         when '1'
-          class_group = ', ciiu4_code'
+          params[:q][:source].to_i == 0
+            class_group = ', ciiu4_code'
+          else
+            class_group = ', ciiu3_code'
+          end
         when '2'
           class_group = ', class_a'
         when '3'
@@ -137,7 +141,7 @@ class HomeController < ApplicationController
         # detail of sectors
         if (params[:q][:group_by].to_i != 0 rescue false)
           gnumber = params[:q][:group_by].to_i
-          v.group_by{ |o| gnumber == 1 ? o.ciiu_code : ( gnumber == 2 ? o.class_a : ( gnumber == 3 ? o.class_b : o.class_c ) ) }.each do |k, v|
+          v.group_by{ |o| gnumber == 1 ? (@source == 'tic' ? o.ciiu4_code : o.ciiu3_code) : ( gnumber == 2 ? o.class_a : ( gnumber == 3 ? o.class_b : o.class_c ) ) }.each do |k, v|
             row = [
               (gnumber == 1 ? ciiu_categories[k.to_s] : ( gnumber == 2 ? EmpMonthMatview::BUDGETS[k] : ( gnumber == 3 ? EmpMonthMatview::STATES[k] : EmpMonthMatview::AREAS[k] ))) || 'Sin clasificar'
             ]
@@ -220,7 +224,7 @@ class HomeController < ApplicationController
         # detail of sectors
         if (params[:q][:group_by].to_i != 0 rescue false)
           gnumber = params[:q][:group_by].to_i
-          v.group_by{ |o| gnumber == 1 ? o.ciiu_code : ( gnumber == 2 ? o.class_a : ( gnumber == 3 ? o.class_b : o.class_c ) ) }.each do |k, v|
+          v.group_by{ |o| gnumber == 1 ? (@source == 'tic' ? o.ciiu4_code : o.ciiu3_code) : ( gnumber == 2 ? o.class_a : ( gnumber == 3 ? o.class_b : o.class_c ) ) }.each do |k, v|
             row = [
               (gnumber == 1 ? ciiu_categories[k.to_s] : ( gnumber == 2 ? EmpMonthMatview::BUDGETS[k] : ( gnumber == 3 ? EmpMonthMatview::STATES[k] : EmpMonthMatview::AREAS[k] ))) || 'Sin clasificar'
             ]
@@ -303,7 +307,7 @@ class HomeController < ApplicationController
         # detail of sectors
         if (params[:q][:group_by].to_i != 0 rescue false)
           gnumber = params[:q][:group_by].to_i
-          v.group_by{ |o| gnumber == 1 ? o.ciiu_code : ( gnumber == 2 ? o.class_a : ( gnumber == 3 ? o.class_b : o.class_c ) ) }.each do |k, v|
+          v.group_by{ |o| gnumber == 1 ? (@source == 'tic' ? o.ciiu4_code : o.ciiu3_code) : ( gnumber == 2 ? o.class_a : ( gnumber == 3 ? o.class_b : o.class_c ) ) }.each do |k, v|
             row = [
               (gnumber == 1 ? ciiu_categories[k.to_s] : ( gnumber == 2 ? EmpMonthMatview::BUDGETS[k] : ( gnumber == 3 ? EmpMonthMatview::STATES[k] : EmpMonthMatview::AREAS[k] ))) || 'Sin clasificar'
             ]
