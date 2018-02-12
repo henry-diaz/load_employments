@@ -117,7 +117,7 @@
           - if (params[:q][:group_by].to_i != 0 rescue false)
             / Grouped info
             - gnumber = params[:q][:group_by].to_i
-            - v.group_by{ |o| gnumber == 1 ? o.ciiu_code : ( gnumber == 2 ? o.class_a : ( gnumber == 3 ? o.class_b : o.class_c ) ) }.each do |k, v|
+            - v.group_by{ |o| gnumber == 1 ? (@source == 'tic' ? o.ciiu4_code : o.ciiu3_code) : ( gnumber == 2 ? o.class_a : ( gnumber == 3 ? o.class_b : o.class_c ) ) }.each do |k, v|
               %tr{ class: (params[:q][:show_patron].to_i == 1 rescue false) ? 'sector' : nil }
                 %td
                   &thinsp;
@@ -199,7 +199,7 @@
           - if (params[:q][:group_by].to_i != 0 rescue false)
             / Grouped info
             - gnumber = params[:q][:group_by].to_i
-            - v.group_by{ |o| gnumber == 1 ? o.ciiu_code : ( gnumber == 2 ? o.class_a : ( gnumber == 3 ? o.class_b : o.class_c ) ) }.each do |k, v|
+            - v.group_by{ |o| gnumber == 1 ? (@source == 'tic' ? o.ciiu4_code : o.ciiu3_code) : ( gnumber == 2 ? o.class_a : ( gnumber == 3 ? o.class_b : o.class_c ) ) }.each do |k, v|
               %tr{ class: (params[:q][:show_patron].to_i == 1 rescue false) ? 'sector' : nil }
                 %td
                   &thinsp;
@@ -281,7 +281,7 @@
           - if (params[:q][:group_by].to_i != 0 rescue false)
             / Grouped info
             - gnumber = params[:q][:group_by].to_i
-            - v.group_by{ |o| gnumber == 1 ? o.ciiu_code : ( gnumber == 2 ? o.class_a : ( gnumber == 3 ? o.class_b : o.class_c ) ) }.each do |k, v|
+            - v.group_by{ |o| gnumber == 1 ? (@source == 'tic' ? o.ciiu4_code : o.ciiu3_code) : ( gnumber == 2 ? o.class_a : ( gnumber == 3 ? o.class_b : o.class_c ) ) }.each do |k, v|
               %tr{ class: (params[:q][:show_patron].to_i == 1 rescue false) ? 'sector' : nil }
                 %td
                   &thinsp;
