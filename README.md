@@ -79,9 +79,10 @@ psql -d ovisss -c "insert into dim_employers(nit, name, created_at, updated_at) 
 
 psql -d ovisss -c "update tmp_employments set source = 2 where nit in ('01010101010101', '02020202020202', '03030303030303', '04040404040404');"
 
-13. RE RUN PUBLIC CLASSIFICATION
+13. SET DEPTO AND MUNIC FIELDS
 
-RAILS_ENV=production bundle exec rake load:classifications
+update tmp_employments set depto=SUBSTR("deptoMunic"::text, 1,2)::int, munic=SUBSTR("deptoMunic"::text, 3,2)::int where source=1;
+
 
 
 CATÁLOGO DE SOURCES

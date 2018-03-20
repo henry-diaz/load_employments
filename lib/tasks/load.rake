@@ -1,6 +1,6 @@
 require 'csv'
 namespace :load do
-  
+
   desc 'Carga de bienestar magisterial'
   task isbm: [:environment] do
     i = 0
@@ -184,6 +184,43 @@ namespace :load do
       # rescue
         # puts "Hubo un error cargando: #{row.inspect}."
       # end
+    end
+  end
+
+  desc 'Cambiar a privados'
+  task change_to_private: [:environment] do
+    require 'csv'
+    csv_path = "#{Rails.root.to_s}/db/pasar_a_privados.csv"
+    CSV.foreach(csv_path, headers: true, encoding:'utf-8') do |row|
+      # begin
+      patronal = row[0].rjust(9, "0")
+      records  = TmpEmployment.where('noPatronal' => patronal, source: 1)
+      if records.any?
+        records.update_all(
+          sector: 1,
+          class_a: nil,
+          class_b: nil,
+          class_c: nil,
+        )
+      else
+        open("#{Rails.root.to_s}/log/process.log", 'a') do |f|
+          f.puts ""
+          f.puts "No se encontro el patron #{patronal} con nombre #{row[1]}"
+        end
+      end
+      # rescue
+        # puts "Hubo un error cargando: #{row.inspect}."
+      # end
+    end
+  end
+
+  desc 'Depto y munic para registros de la DAE'
+  task depto_munics: [:environment] do
+    TmpEmployment.where(source: 1).find_in_batches.with_index do |group, index|
+      puts "Group #{index + 1}"
+      group.each do |emp|
+        emp.update_attributes(depto: emp.deptoMunic[0,2].to_i, munic: emp.deptoMunic[2,4].to_i)
+      end
     end
   end
 
