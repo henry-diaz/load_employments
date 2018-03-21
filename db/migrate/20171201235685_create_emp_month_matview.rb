@@ -26,6 +26,7 @@ class CreateEmpMonthMatview < ActiveRecord::Migration[5.0]
         e.class_a as class_a,
         e.class_b as class_b,
         e.class_c as class_c,
+        e.class_d as class_d,
         e."estadoPlanilla" as status,
         e.periodo as period,
         e.anyo as year,
@@ -49,6 +50,7 @@ class CreateEmpMonthMatview < ActiveRecord::Migration[5.0]
       CREATE INDEX emp_month_matview_class_a ON emp_month_matview (class_a);
       CREATE INDEX emp_month_matview_class_b ON emp_month_matview (class_b);
       CREATE INDEX emp_month_matview_class_c ON emp_month_matview (class_c);
+      CREATE INDEX emp_month_matview_class_d ON emp_month_matview (class_d);
       CREATE INDEX emp_month_matview_source ON emp_month_matview (source);
     SQL
   end

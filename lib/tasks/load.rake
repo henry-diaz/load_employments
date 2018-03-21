@@ -187,6 +187,41 @@ namespace :load do
     end
   end
 
+  desc 'Clasificador de ministerios'
+  task ministerios: [:environment] do
+    require 'csv'
+    csv_path = "#{Rails.root.to_s}/db/clasificacion_ministerios.csv"
+    CSV.foreach(csv_path, headers: true, encoding:'utf-8') do |row|
+      # begin
+        patronal = row[0].rjust(9, "0")
+        is_private = row[3].to_i == 1 ? true : false
+        records  = TmpEmployment.where('noPatronal' => patronal)
+        if records.any?
+          if is_private
+            records.update_all(
+              sector: 1,
+              class_a: nil,
+              class_b: nil,
+              class_c: nil,
+              class_d: nil,
+            )
+          else
+            records.update_all(
+              class_d: row[2].present? ? EmpMonthMatview::MINISTRIES.invert[row[2].strip] : nil
+            )
+          end
+        else
+          open("#{Rails.root.to_s}/log/process.log", 'a') do |f|
+            f.puts ""
+            f.puts "No se encontro el patron #{patronal} con nombre #{row[1]}"
+          end
+        end
+      # rescue
+        # puts "Hubo un error cargando: #{row.inspect}."
+      # end
+    end
+  end
+
   desc 'Cambiar a privados'
   task change_to_private: [:environment] do
     require 'csv'

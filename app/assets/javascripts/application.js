@@ -19,7 +19,11 @@ $(function(){
   });
   $( ".select2-ministries" ).select2({
     theme: "bootstrap",
-    placeholder: "Todos los ministerios"
+    placeholder: "Todas las áreas"
+  });
+  $( ".select2-ministries-new" ).select2({
+    theme: "bootstrap",
+    placeholder: "Todos los Ministerios e Instituciones"
   });
   $( ".select2-employers" ).select2({
     theme: "bootstrap",

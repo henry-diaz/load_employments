@@ -35,6 +35,8 @@ class HomeController < ApplicationController
           class_group = ', class_b'
         when '4'
           class_group = ', class_c'
+        when '5'
+          class_group = ', class_d'
         else
           class_group = ''
       end
@@ -89,6 +91,8 @@ class HomeController < ApplicationController
       where_string += ' AND class_b IN (' + params[:q][:states].map(&:to_i).join(',')  + ')' if params[:q][:states] && params[:q][:states].size > 1
       # areas conditions
       where_string += ' AND class_c IN (' + params[:q][:areas].map(&:to_i).join(',')  + ')' if params[:q][:areas] && params[:q][:areas].size > 1
+      # areas conditions
+      where_string += ' AND class_d IN (' + params[:q][:ministries].map(&:to_i).join(',')  + ')' if params[:q][:ministries] && params[:q][:ministries].size > 1
 
       @employments = EmpMonthMatview
                       .select(select_string)
