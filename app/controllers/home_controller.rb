@@ -145,9 +145,9 @@ class HomeController < ApplicationController
         # detail of sectors
         if (params[:q][:group_by].to_i != 0 rescue false)
           gnumber = params[:q][:group_by].to_i
-          v.group_by{ |o| gnumber == 1 ? (@source == 'tic' ? o.ciiu4_code : o.ciiu3_code) : ( gnumber == 2 ? o.class_a : ( gnumber == 3 ? o.class_b : o.class_c ) ) }.each do |k, v|
+          v.group_by{ |o| gnumber == 1 ? (@source == 'tic' ? o.ciiu4_code : o.ciiu3_code) : ( gnumber == 2 ? o.class_a : ( gnumber == 3 ? o.class_b : ( gnumber == 4 ? o.class_c : o.class_d ) ) ) }.each do |k, v|
             row = [
-              (gnumber == 1 ? ciiu_categories[k.to_s] : ( gnumber == 2 ? EmpMonthMatview::BUDGETS[k] : ( gnumber == 3 ? EmpMonthMatview::STATES[k] : EmpMonthMatview::AREAS[k] ))) || 'Sin clasificar'
+              (gnumber == 1 ? ciiu_categories[k.to_s] : ( gnumber == 2 ? EmpMonthMatview::BUDGETS[k] : ( gnumber == 3 ? EmpMonthMatview::STATES[k] : ( gnumber == 4 ? EmpMonthMatview::AREAS[k] : EmpMonthMatview::MINISTRIES[k] ) ))) || 'Sin clasificar'
             ]
             @uniq_times.each_with_index do |t, i|
               employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
@@ -228,9 +228,9 @@ class HomeController < ApplicationController
         # detail of sectors
         if (params[:q][:group_by].to_i != 0 rescue false)
           gnumber = params[:q][:group_by].to_i
-          v.group_by{ |o| gnumber == 1 ? (@source == 'tic' ? o.ciiu4_code : o.ciiu3_code) : ( gnumber == 2 ? o.class_a : ( gnumber == 3 ? o.class_b : o.class_c ) ) }.each do |k, v|
+          v.group_by{ |o| gnumber == 1 ? (@source == 'tic' ? o.ciiu4_code : o.ciiu3_code) : ( gnumber == 2 ? o.class_a : ( gnumber == 3 ? o.class_b : ( gnumber == 4 ? o.class_c : o.class_d ) ) ) }.each do |k, v|
             row = [
-              (gnumber == 1 ? ciiu_categories[k.to_s] : ( gnumber == 2 ? EmpMonthMatview::BUDGETS[k] : ( gnumber == 3 ? EmpMonthMatview::STATES[k] : EmpMonthMatview::AREAS[k] ))) || 'Sin clasificar'
+              (gnumber == 1 ? ciiu_categories[k.to_s] : ( gnumber == 2 ? EmpMonthMatview::BUDGETS[k] : ( gnumber == 3 ? EmpMonthMatview::STATES[k] : ( gnumber == 4 ? EmpMonthMatview::AREAS[k] : EmpMonthMatview::MINISTRIES[k] ) ))) || 'Sin clasificar'
             ]
             @uniq_times.each_with_index do |t, i|
               employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
@@ -311,9 +311,9 @@ class HomeController < ApplicationController
         # detail of sectors
         if (params[:q][:group_by].to_i != 0 rescue false)
           gnumber = params[:q][:group_by].to_i
-          v.group_by{ |o| gnumber == 1 ? (@source == 'tic' ? o.ciiu4_code : o.ciiu3_code) : ( gnumber == 2 ? o.class_a : ( gnumber == 3 ? o.class_b : o.class_c ) ) }.each do |k, v|
+          v.group_by{ |o| gnumber == 1 ? (@source == 'tic' ? o.ciiu4_code : o.ciiu3_code) : ( gnumber == 2 ? o.class_a : ( gnumber == 3 ? o.class_b : ( gnumber == 4 ? o.class_c : o.class_d ) ) ) }.each do |k, v|
             row = [
-              (gnumber == 1 ? ciiu_categories[k.to_s] : ( gnumber == 2 ? EmpMonthMatview::BUDGETS[k] : ( gnumber == 3 ? EmpMonthMatview::STATES[k] : EmpMonthMatview::AREAS[k] ))) || 'Sin clasificar'
+              (gnumber == 1 ? ciiu_categories[k.to_s] : ( gnumber == 2 ? EmpMonthMatview::BUDGETS[k] : ( gnumber == 3 ? EmpMonthMatview::STATES[k] : ( gnumber == 4 ? EmpMonthMatview::AREAS[k] : EmpMonthMatview::MINISTRIES[k] ) ))) || 'Sin clasificar'
             ]
             @uniq_times.each_with_index do |t, i|
               employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}

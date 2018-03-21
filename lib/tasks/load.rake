@@ -222,6 +222,54 @@ namespace :load do
     end
   end
 
+  desc 'Corregir la clasificación para las instituciones agregadas'
+  task fix_custom: [:environment] do
+    # BM
+    nit = '01010101010101'
+    records  = TmpEmployment.where(nit: nit)
+    if records.any?
+      records.update_all(
+        class_a: 1,
+        class_b: 3,
+        class_c: 17,
+        class_d: 74,
+      )
+    end
+    # CEL
+    nit = '02020202020202'
+    records  = TmpEmployment.where(nit: nit)
+    if records.any?
+      records.update_all(
+        class_a: 1,
+        class_b: 3,
+        class_c: 8,
+        class_d: 18,
+      )
+    end
+    # FAES
+    nit = '03030303030303'
+    records  = TmpEmployment.where(nit: nit)
+    if records.any?
+      records.update_all(
+        class_a: 1,
+        class_b: 3,
+        class_c: 19,
+        class_d: 119,
+      )
+    end
+    # GEO
+    nit = '04040404040404'
+    records  = TmpEmployment.where(nit: nit)
+    if records.any?
+      records.update_all(
+        class_a: 1,
+        class_b: 3,
+        class_c: 8,
+        class_d: 120,
+      )
+    end
+  end
+
   desc 'Cambiar a privados'
   task change_to_private: [:environment] do
     require 'csv'
