@@ -25,11 +25,7 @@ namespace :load do
           ciiu4: 8430,
           ciiu3: 7530,
           sector: 3,
-          'estadoPlanilla' => 1,
-          class_a: 1,
-          class_b: 3,
-          class_c: 8,
-          class_d: 18,
+          'estadoPlanilla' => 1
         ).first_or_initialize
 
         unless employment.save
@@ -65,7 +61,11 @@ namespace :load do
           ciiu4: 3510,
           sector: 1,
           'estadoPlanilla' => 1,
-          pensionados: row[4].to_i
+          pensionados: row[4].to_i,
+          class_a: 1,
+          class_b: 3,
+          class_c: 8,
+          class_d: 18,
         ).first_or_initialize
         unless employment.save
           puts "No se pudo guardar #{row[0]}-#{row[1]}. #{employment.errors.full_messages.join(", ")}"
