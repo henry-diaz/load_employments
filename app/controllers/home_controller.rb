@@ -108,7 +108,7 @@ class HomeController < ApplicationController
     else
       # Go to default values
       @employments = EmpMonthMatview
-                      .select('sector, year, sum(total)::decimal / max(month) as total, sum(amount)::decimal / max(month) as amount, max(pea) as pea, max(occupied) as occupied')
+                      .select('sector, year, sum(total)::decimal / max(month) as total_emp, sum(amount)::decimal / max(month) as amount, max(pea) as pea, max(occupied) as occupied')
                       .where(period: 201501 .. 201601)
                       .where(source: [1,2]) # Default source statistics and customs
                       .group(:sector, :year)
@@ -136,7 +136,7 @@ class HomeController < ApplicationController
         @uniq_times.each do |t|
           employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
           if employments
-            row << [employments.sum(&:total)]
+            row << [employments.sum(&:total_emp)]
           else
             row << ['']
           end
@@ -152,7 +152,7 @@ class HomeController < ApplicationController
             @uniq_times.each_with_index do |t, i|
               employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
               if employments
-                row << [employments.sum(&:total)]
+                row << [employments.sum(&:total_emp)]
               else
                 row << ['']
               end
@@ -165,7 +165,7 @@ class HomeController < ApplicationController
                 @uniq_times.each_with_index do |t, i|
                   employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
                   if employments
-                    row << [employments.sum(&:total)]
+                    row << [employments.sum(&:total_emp)]
                   else
                     row << ['']
                   end
@@ -181,7 +181,7 @@ class HomeController < ApplicationController
             @uniq_times.each_with_index do |t, i|
               employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
               if employments
-                row << [employments.sum(&:total)]
+                row << [employments.sum(&:total_emp)]
               else
                 row << ['']
               end
@@ -195,7 +195,7 @@ class HomeController < ApplicationController
       @uniq_times.each do |t|
         employments = @year_selected ? @employments.select{|o| o.year.to_i == t.to_i} : @employments.select{|o| o.period.to_i == t.to_i}
         if employments
-          row << [employments.sum(&:total)]
+          row << [employments.sum(&:total_emp)]
         else
           row << ['']
         end
@@ -302,7 +302,7 @@ class HomeController < ApplicationController
         @uniq_times.each do |t|
           employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
           if employments
-            row << [(employments.sum(&:amount) / employments.sum(&:total) rescue 0).try(:round, 2)]
+            row << [(employments.sum(&:amount) / employments.sum(&:total_emp) rescue 0).try(:round, 2)]
           else
             row << ['']
           end
@@ -318,7 +318,7 @@ class HomeController < ApplicationController
             @uniq_times.each_with_index do |t, i|
               employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
               if employments
-                row << [(employments.sum(&:amount) / employments.sum(&:total) rescue 0).try(:round, 2)]
+                row << [(employments.sum(&:amount) / employments.sum(&:total_emp) rescue 0).try(:round, 2)]
               else
                 row << ['']
               end
@@ -331,7 +331,7 @@ class HomeController < ApplicationController
                 @uniq_times.each_with_index do |t, i|
                   employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
                   if employments
-                    row << [(employments.sum(&:amount) / employments.sum(&:total) rescue 0).try(:round, 2)]
+                    row << [(employments.sum(&:amount) / employments.sum(&:total_emp) rescue 0).try(:round, 2)]
                   else
                     row << ['']
                   end
@@ -347,7 +347,7 @@ class HomeController < ApplicationController
             @uniq_times.each_with_index do |t, i|
               employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
               if employments
-                row << [(employments.sum(&:amount) / employments.sum(&:total) rescue 0).try(:round, 2)]
+                row << [(employments.sum(&:amount) / employments.sum(&:total_emp) rescue 0).try(:round, 2)]
               else
                 row << ['']
               end
@@ -361,7 +361,7 @@ class HomeController < ApplicationController
       @uniq_times.each do |t|
         employments = @year_selected ? @employments.select{|o| o.year.to_i == t.to_i} : @employments.select{|o| o.period.to_i == t.to_i}
         if employments
-          row << [(employments.sum(&:amount) / employments.sum(&:total) rescue 0).try(:round, 2)]
+          row << [(employments.sum(&:amount) / employments.sum(&:total_emp) rescue 0).try(:round, 2)]
         else
           row << ['']
         end
