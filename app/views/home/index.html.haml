@@ -113,7 +113,7 @@
             - @uniq_times.each_with_index do |t, i|
               - employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
               - if employments
-                %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_with_delimiter employments.sum(&:total)
+                %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_with_delimiter employments.sum(&:total_emp).try(:round, 4)
               - else
                 %td{ class: i % 2 == 0 ? 'odd' : nil }
                   &nbsp
@@ -130,7 +130,7 @@
                 - @uniq_times.each_with_index do |t, i|
                   - employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
                   - if employments
-                    %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_with_delimiter employments.sum(&:total)
+                    %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_with_delimiter employments.sum(&:total_emp).try(:round, 4)
                   - else
                     %td{ class: i % 2 == 0 ? 'odd' : nil }
                       &nbsp
@@ -143,7 +143,7 @@
                     - @uniq_times.each_with_index do |t, i|
                       - employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
                       - if employments
-                        %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_with_delimiter employments.sum(&:total)
+                        %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_with_delimiter employments.sum(&:total_emp).try(:round, 4)
                       - else
                         %td{ class: i % 2 == 0 ? 'odd' : nil }
                           &nbsp
@@ -156,7 +156,7 @@
                 - @uniq_times.each_with_index do |t, i|
                   - employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
                   - if employments
-                    %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_with_delimiter employments.sum(&:total)
+                    %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_with_delimiter employments.sum(&:total_emp).try(:round, 4)
                   - else
                     %td{ class: i % 2 == 0 ? 'odd' : nil }
                       &nbsp
@@ -167,7 +167,7 @@
           - @uniq_times.each_with_index do |t, i|
             - employments = @year_selected ? @employments.select{|o| o.year.to_i == t.to_i} : @employments.select{|o| o.period.to_i == t.to_i}
             - if employments
-              %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_with_delimiter employments.sum(&:total)
+              %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_with_delimiter employments.sum(&:total_emp).try(:round, 4)
             - else
               %td{ class: i % 2 == 0 ? 'odd' : nil }
                 &nbsp
@@ -278,7 +278,7 @@
             - @uniq_times.each_with_index do |t, i|
               - employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
               - if employments
-                %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency ((employments.sum(&:amount) / employments.sum(&:total) rescue 0))
+                %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency ((employments.sum(&:amount) / employments.sum(&:total_emp) rescue 0))
               - else
                 %td{ class: i % 2 == 0 ? 'odd' : nil }
                   &nbsp
@@ -294,7 +294,7 @@
                 - @uniq_times.each_with_index do |t, i|
                   - employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
                   - if employments
-                    %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency (employments.sum(&:amount) / employments.sum(&:total)) rescue 0
+                    %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency (employments.sum(&:amount) / employments.sum(&:total_emp)) rescue 0
                   - else
                     %td{ class: i % 2 == 0 ? 'odd' : nil }
                       &nbsp
@@ -307,7 +307,7 @@
                     - @uniq_times.each_with_index do |t, i|
                       - employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
                       - if employments
-                        %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency (employments.sum(&:amount) / employments.sum(&:total)) rescue 0
+                        %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency (employments.sum(&:amount) / employments.sum(&:total_emp)) rescue 0
                       - else
                         %td{ class: i % 2 == 0 ? 'odd' : nil }
                           &nbsp
@@ -320,7 +320,7 @@
                 - @uniq_times.each_with_index do |t, i|
                   - employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
                   - if employments
-                    %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency (employments.sum(&:amount) / employments.sum(&:total)) rescue 0
+                    %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency (employments.sum(&:amount) / employments.sum(&:total_emp)) rescue 0
                   - else
                     %td{ class: i % 2 == 0 ? 'odd' : nil }
                       &nbsp
@@ -331,7 +331,7 @@
           - @uniq_times.each_with_index do |t, i|
             - employments = @year_selected ? @employments.select{|o| o.year.to_i == t.to_i} : @employments.select{|o| o.period.to_i == t.to_i}
             - if employments
-              %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency (employments.sum(&:amount) / employments.sum(&:total)) rescue 0
+              %td.data{class: i % 2 == 0 ? 'odd' : nil}= number_to_currency (employments.sum(&:amount) / employments.sum(&:total_emp)) rescue 0
             - else
               %td{ class: i % 2 == 0 ? 'odd' : nil }
                 &nbsp
