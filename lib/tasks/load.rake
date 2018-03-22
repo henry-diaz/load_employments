@@ -26,6 +26,10 @@ namespace :load do
           ciiu3: 7530,
           sector: 3,
           'estadoPlanilla' => 1,
+          class_a: 1,
+          class_b: 3,
+          class_c: 8,
+          class_d: 18,
         ).first_or_initialize
 
         unless employment.save
