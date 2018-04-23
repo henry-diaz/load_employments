@@ -27,6 +27,7 @@ class CreateEmpMonthMatview < ActiveRecord::Migration[5.0]
         e.class_b as class_b,
         e.class_c as class_c,
         e.class_d as class_d,
+        e.clasifica as clasifica,
         e."estadoPlanilla" as status,
         e.periodo as period,
         e.anyo as year,

@@ -17,6 +17,10 @@ $(function(){
     theme: "bootstrap",
     placeholder: "Todas las áreas de gestión"
   });
+  $( ".select2-anuaries" ).select2({
+    theme: "bootstrap",
+    placeholder: "Todas las áreas"
+  });
   $( ".select2-ministries" ).select2({
     theme: "bootstrap",
     placeholder: "Todas las áreas"

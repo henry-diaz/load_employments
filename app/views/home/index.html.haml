@@ -18,31 +18,38 @@
           %strong
             Sectores
         = f.select :sector, options_for_select(EmpMonthMatview::SECTORS.invert, (params[:q][:sector] rescue '')), { }, { class: 'form-control' }
-      .form-group
-        %label
-          %strong
-            Rama de Actividad Económica
-        = f.collection_select :categories, @ciuu_categories, :code, :name, { selected: (params[:q][:categories] rescue '') }, {class: 'form-control select2-activities', multiple: true}
-      .form-group
-        %label
-          %strong
-            De acuerdo a ley de presupuesto
-        = f.select :budgets, options_for_select(EmpMonthMatview::BUDGETS.invert, (params[:q][:budgets] rescue '')), {}, { class: 'form-control select2-institutions', multiple: true }
-      .form-group
-        %label
-          %strong
-            Por Organos del Estado
-        = f.select :states, options_for_select(EmpMonthMatview::STATES.invert, (params[:q][:states] rescue '')), {}, { class: 'form-control  select2-areas', multiple: true }
-      .form-group
-        %label
-          %strong
-            Por áreas de gestión
-        = f.select :areas, options_for_select(EmpMonthMatview::AREAS.invert, (params[:q][:areas] rescue '')), {}, { class: 'form-control  select2-ministries', multiple: true }
-      .form-group
-        %label
-          %strong
-            Por Ministerios e Instituciones
-        = f.select :ministries, options_for_select(EmpMonthMatview::MINISTRIES.invert, (params[:q][:ministries] rescue '')), {}, { class: 'form-control  select2-ministries-new', multiple: true }
+      - if @source == 'tic'
+        .form-group
+          %label
+            %strong
+              Rama de Actividad Económica
+          = f.collection_select :categories, @ciuu_categories, :code, :name, { selected: (params[:q][:categories] rescue '') }, {class: 'form-control select2-activities', multiple: true}
+        .form-group
+          %label
+            %strong
+              De acuerdo a ley de presupuesto
+          = f.select :budgets, options_for_select(EmpMonthMatview::BUDGETS.invert, (params[:q][:budgets] rescue '')), {}, { class: 'form-control select2-institutions', multiple: true }
+        .form-group
+          %label
+            %strong
+              Por Organos del Estado
+          = f.select :states, options_for_select(EmpMonthMatview::STATES.invert, (params[:q][:states] rescue '')), {}, { class: 'form-control  select2-areas', multiple: true }
+        .form-group
+          %label
+            %strong
+              Por áreas de gestión
+          = f.select :areas, options_for_select(EmpMonthMatview::AREAS.invert, (params[:q][:areas] rescue '')), {}, { class: 'form-control  select2-ministries', multiple: true }
+        .form-group
+          %label
+            %strong
+              Por Ministerios e Instituciones
+          = f.select :ministries, options_for_select(EmpMonthMatview::MINISTRIES.invert, (params[:q][:ministries] rescue '')), {}, { class: 'form-control  select2-ministries-new', multiple: true }
+      - else
+        .form-group
+          %label
+            %strong
+              Por clasificación en el anuario
+          = f.select :anuaries, options_for_select(EmpMonthMatview::ANUARIES.invert, (params[:q][:anuaries] rescue '')), {}, { class: 'form-control  select2-anuaries', multiple: true }
       .form-group
         %label
           %strong
@@ -64,11 +71,18 @@
           %strong
             Hasta
         = f.collection_select :end_at, @times, :period, :period, { selected: (params[:q][:end_at] rescue 201601) }, {class: 'form-control'}
-      .form-group
-        %label
-          %strong
-            Desagregado por
-        = f.select :group_by, options_for_select(EmpMonthMatview::GROUP_BY.invert, (params[:q][:group_by] rescue '0')), {}, {class: 'form-control'}
+      - if @source == 'tic'
+        .form-group
+          %label
+            %strong
+              Desagregado por
+          = f.select :group_by, options_for_select(EmpMonthMatview::GROUP_BY.invert, (params[:q][:group_by] rescue '0')), {}, {class: 'form-control'}
+      - else
+        .form-group
+          %label
+            %strong
+              Desagregado por
+          = f.select :group_by, options_for_select(EmpMonthMatview::GROUP_BY_STATISTICS.invert, (params[:q][:group_by] rescue '0')), {}, {class: 'form-control'}
       - if @source == 'tic'
         %div
           %label.radio-inline
@@ -120,13 +134,12 @@
           / Detail
           - if (params[:q][:group_by].to_i != 0 rescue false)
             / Grouped info
-            - gnumber = params[:q][:group_by].to_i
-            - v.group_by{ |o| gnumber == 1 ? (@source == 'tic' ? o.ciiu4_code : o.ciiu3_code) : ( gnumber == 2 ? o.class_a : ( gnumber == 3 ? o.class_b : ( gnumber == 4 ? o.class_c : o.class_d ) ) ) }.each do |k, v|
+            - v.group_by{ |o| o.send(@group_by_attr) }.each do |k, v|
 
               %tr{ class: (params[:q][:show_patron].to_i == 1 rescue false) ? 'sector' : nil }
                 %td
                   &thinsp;
-                  = (gnumber == 1 ? ciiu_categories[k.to_s] : ( gnumber == 2 ? EmpMonthMatview::BUDGETS[k] : ( gnumber == 3 ? EmpMonthMatview::STATES[k] : ( gnumber == 4 ? EmpMonthMatview::AREAS[k] : EmpMonthMatview::MINISTRIES[k] ) ))) || 'Sin clasificar'
+                  = EmpMonthMatview.grouped_name(k, @group_by_id, ciiu_categories)
                 - @uniq_times.each_with_index do |t, i|
                   - employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
                   - if employments
@@ -203,12 +216,11 @@
           / Detail
           - if (params[:q][:group_by].to_i != 0 rescue false)
             / Grouped info
-            - gnumber = params[:q][:group_by].to_i
-            - v.group_by{ |o| gnumber == 1 ? (@source == 'tic' ? o.ciiu4_code : o.ciiu3_code) : ( gnumber == 2 ? o.class_a : ( gnumber == 3 ? o.class_b : ( gnumber == 4 ? o.class_c : o.class_d ) ) ) }.each do |k, v|
+            - v.group_by{ |o| o.send(@group_by_attr) }.each do |k, v|
               %tr{ class: (params[:q][:show_patron].to_i == 1 rescue false) ? 'sector' : nil }
                 %td
                   &thinsp;
-                  = (gnumber == 1 ? ciiu_categories[k.to_s] : ( gnumber == 2 ? EmpMonthMatview::BUDGETS[k] : ( gnumber == 3 ? EmpMonthMatview::STATES[k] : ( gnumber == 4 ? EmpMonthMatview::AREAS[k] : EmpMonthMatview::MINISTRIES[k] ) ))) || 'Sin clasificar'
+                  = EmpMonthMatview.grouped_name(k, @group_by_id, ciiu_categories)
                 - @uniq_times.each_with_index do |t, i|
                   - employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
                   - if employments
@@ -285,12 +297,11 @@
           / Detail
           - if (params[:q][:group_by].to_i != 0 rescue false)
             / Grouped info
-            - gnumber = params[:q][:group_by].to_i
-            - v.group_by{ |o| gnumber == 1 ? (@source == 'tic' ? o.ciiu4_code : o.ciiu3_code) : ( gnumber == 2 ? o.class_a : ( gnumber == 3 ? o.class_b : ( gnumber == 4 ? o.class_c : o.class_d ) ) ) }.each do |k, v|
+            - v.group_by{ |o| o.send(@group_by_attr) }.each do |k, v|
               %tr{ class: (params[:q][:show_patron].to_i == 1 rescue false) ? 'sector' : nil }
                 %td
                   &thinsp;
-                  = (gnumber == 1 ? ciiu_categories[k.to_s] : ( gnumber == 2 ? EmpMonthMatview::BUDGETS[k] : ( gnumber == 3 ? EmpMonthMatview::STATES[k] : ( gnumber == 4 ? EmpMonthMatview::AREAS[k] : EmpMonthMatview::MINISTRIES[k] ) ))) || 'Sin clasificar'
+                  = EmpMonthMatview.grouped_name(k, @group_by_id, ciiu_categories)
                 - @uniq_times.each_with_index do |t, i|
                   - employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
                   - if employments

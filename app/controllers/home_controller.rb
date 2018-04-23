@@ -21,22 +21,33 @@ class HomeController < ApplicationController
       group_string = ''
       where_string = ''
       class_group = ''
+      @group_by_attr = nil
+      @group_by_id = params[:q][:group_by].try(:to_i)
       # group string
       case params[:q][:group_by]
         when '1'
           if params[:q][:source].to_i == 0
             class_group = ', ciiu4_code'
+            @group_by_attr = :ciiu4_code
           else
             class_group = ', ciiu3_code'
+            @group_by_attr = :ciiu3_code
           end
         when '2'
           class_group = ', class_a'
+          @group_by_attr = :class_a
         when '3'
           class_group = ', class_b'
+          @group_by_attr = :class_b
         when '4'
           class_group = ', class_c'
+          @group_by_attr = :class_c
         when '5'
           class_group = ', class_d'
+          @group_by_attr = :class_d
+        when '6'
+          class_group = ', clasifica'
+          @group_by_attr = :clasifica
         else
           class_group = ''
       end
@@ -74,25 +85,27 @@ class HomeController < ApplicationController
       if params[:q][:source].to_i == 0
         # DTIC
         @source = 'tic'
-        where_string += ' AND source in (0, 2)'
+        where_string += ' AND source in (0)'
         where_string += ' AND status = 1' if params[:q][:status].to_i == 1 # Proccess or payments conditions
         where_string += ' AND ciiu4_code IN (' + params[:q][:categories].map{|str| "'#{str}'"}.join(',')  + ')' if params[:q][:categories] && params[:q][:categories].size > 1
         @ciuu_categories = CiiuCategory.all
+        # budget conditions
+        where_string += ' AND class_a IN (' + params[:q][:budgets].map(&:to_i).join(',')  + ')' if params[:q][:budgets] && params[:q][:budgets].size > 1
+        # states conditions
+        where_string += ' AND class_b IN (' + params[:q][:states].map(&:to_i).join(',')  + ')' if params[:q][:states] && params[:q][:states].size > 1
+        # areas conditions
+        where_string += ' AND class_c IN (' + params[:q][:areas].map(&:to_i).join(',')  + ')' if params[:q][:areas] && params[:q][:areas].size > 1
+        # areas conditions
+        where_string += ' AND class_d IN (' + params[:q][:ministries].map(&:to_i).join(',')  + ')' if params[:q][:ministries] && params[:q][:ministries].size > 1
       else
         # DAE
         @source = 'dae'
-        where_string += ' AND source in (1, 2)'
-        where_string += ' AND ciiu3_code IN (' + params[:q][:categories].map{|str| "'#{str}'"}.join(',')  + ')' if params[:q][:categories].size > 1
-        @ciuu_categories = Ciiu3Category.all
+        where_string += ' AND source in (1)'
+        # anuary conditions
+        where_string += ' AND clasifica IN (' + params[:q][:anuaries].map{|o| "\'#{o}\'"}.join(',')  + ')' if params[:q][:anuaries] && params[:q][:anuaries].size > 1
+        # where_string += ' AND ciiu3_code IN (' + params[:q][:categories].map{|str| "'#{str}'"}.join(',')  + ')' if params[:q][:categories].size > 1
+        # @ciuu_categories = Ciiu3Category.all
       end
-      # budget conditions
-      where_string += ' AND class_a IN (' + params[:q][:budgets].map(&:to_i).join(',')  + ')' if params[:q][:budgets] && params[:q][:budgets].size > 1
-      # states conditions
-      where_string += ' AND class_b IN (' + params[:q][:states].map(&:to_i).join(',')  + ')' if params[:q][:states] && params[:q][:states].size > 1
-      # areas conditions
-      where_string += ' AND class_c IN (' + params[:q][:areas].map(&:to_i).join(',')  + ')' if params[:q][:areas] && params[:q][:areas].size > 1
-      # areas conditions
-      where_string += ' AND class_d IN (' + params[:q][:ministries].map(&:to_i).join(',')  + ')' if params[:q][:ministries] && params[:q][:ministries].size > 1
 
       @employments = EmpMonthMatview
                       .select(select_string)
@@ -144,10 +157,9 @@ class HomeController < ApplicationController
         csv << row.flatten
         # detail of sectors
         if (params[:q][:group_by].to_i != 0 rescue false)
-          gnumber = params[:q][:group_by].to_i
-          v.group_by{ |o| gnumber == 1 ? (@source == 'tic' ? o.ciiu4_code : o.ciiu3_code) : ( gnumber == 2 ? o.class_a : ( gnumber == 3 ? o.class_b : ( gnumber == 4 ? o.class_c : o.class_d ) ) ) }.each do |k, v|
+          v.group_by{ |o| o.send(@group_by_attr) }.each do |k, v|
             row = [
-              (gnumber == 1 ? ciiu_categories[k.to_s] : ( gnumber == 2 ? EmpMonthMatview::BUDGETS[k] : ( gnumber == 3 ? EmpMonthMatview::STATES[k] : ( gnumber == 4 ? EmpMonthMatview::AREAS[k] : EmpMonthMatview::MINISTRIES[k] ) ))) || 'Sin clasificar'
+              EmpMonthMatview.grouped_name(k, @group_by_id, ciiu_categories)
             ]
             @uniq_times.each_with_index do |t, i|
               employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
@@ -227,10 +239,9 @@ class HomeController < ApplicationController
         csv << row.flatten
         # detail of sectors
         if (params[:q][:group_by].to_i != 0 rescue false)
-          gnumber = params[:q][:group_by].to_i
-          v.group_by{ |o| gnumber == 1 ? (@source == 'tic' ? o.ciiu4_code : o.ciiu3_code) : ( gnumber == 2 ? o.class_a : ( gnumber == 3 ? o.class_b : ( gnumber == 4 ? o.class_c : o.class_d ) ) ) }.each do |k, v|
+          v.group_by{ |o| o.send(@group_by_attr) }.each do |k, v|
             row = [
-              (gnumber == 1 ? ciiu_categories[k.to_s] : ( gnumber == 2 ? EmpMonthMatview::BUDGETS[k] : ( gnumber == 3 ? EmpMonthMatview::STATES[k] : ( gnumber == 4 ? EmpMonthMatview::AREAS[k] : EmpMonthMatview::MINISTRIES[k] ) ))) || 'Sin clasificar'
+               EmpMonthMatview.grouped_name(k, @group_by_id, ciiu_categories)
             ]
             @uniq_times.each_with_index do |t, i|
               employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}
@@ -310,10 +321,9 @@ class HomeController < ApplicationController
         csv << row.flatten
         # detail of sectors
         if (params[:q][:group_by].to_i != 0 rescue false)
-          gnumber = params[:q][:group_by].to_i
-          v.group_by{ |o| gnumber == 1 ? (@source == 'tic' ? o.ciiu4_code : o.ciiu3_code) : ( gnumber == 2 ? o.class_a : ( gnumber == 3 ? o.class_b : ( gnumber == 4 ? o.class_c : o.class_d ) ) ) }.each do |k, v|
+          v.group_by{ |o| o.send(@group_by_attr) }.each do |k, v|
             row = [
-              (gnumber == 1 ? ciiu_categories[k.to_s] : ( gnumber == 2 ? EmpMonthMatview::BUDGETS[k] : ( gnumber == 3 ? EmpMonthMatview::STATES[k] : ( gnumber == 4 ? EmpMonthMatview::AREAS[k] : EmpMonthMatview::MINISTRIES[k] ) ))) || 'Sin clasificar'
+              EmpMonthMatview.grouped_name(k, @group_by_id, ciiu_categories)
             ]
             @uniq_times.each_with_index do |t, i|
               employments = @year_selected ? v.select{|o| o.year.to_i == t.to_i} : v.select{|o| o.period.to_i == t.to_i}

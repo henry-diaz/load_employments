@@ -240,11 +240,29 @@ class EmpMonthMatview < ActiveRecord::Base
     '5' => 'Por Ministerios e Instituciones',
   }
 
+  GROUP_BY_STATISTICS = {
+    '0' => 'Sector',
+    '6' => 'Por clasificación en el anuario',
+  }
+
   GROUP_BY_FIELD = {
     1 => 'ciiu_code',
     2 => 'class_a',
     3 => 'class_b',
     4 => 'class_c',
+    5 => 'clasifica',
+  }
+  ANUARIES = {
+    '01' => 'Agricultura, Caza, Sivicultura y Pesca',
+    '02' => 'Explotación de Minas y Canteras',
+    '03' => 'Industrias Manufactureras',
+    '04' => 'Electricidad, Gas y Agua',
+    '05' => 'Construcción',
+    '06' => 'Comercio por mayor y menor, Restaurantes y Hoteles',
+    '07' => 'Transporte, Alimentación y Comunicaciones',
+    '08' => 'Establecimienos Financieros, Seguros, Bienes Inmuebles y Servicios Prestados a las Empresas',
+    '09' => 'Serviciones Comunales, Sociale y Personales',
+    '10' => 'Sector Doméstico',
   }
 
   def readonly?
@@ -254,4 +272,23 @@ class EmpMonthMatview < ActiveRecord::Base
   def self.refresh
     ActiveRecord::Base.connection.execute('REFRESH MATERIALIZED VIEW emp_month_matview')
   end
+
+  def self.grouped_name gvalue, gid, ciiu_categories
+    value = case gid
+      when 1
+        ciiu_categories[gvalue.to_s]
+      when 2
+        BUDGETS[gvalue]
+      when 3
+        STATES[gvalue]
+      when 4
+        AREAS[gvalue]
+      when 5
+        MINISTRIES[gvalue]
+      when 6
+        ANUARIES[gvalue]
+    end
+    value || 'Sin clasificar'
+  end
+
 end
