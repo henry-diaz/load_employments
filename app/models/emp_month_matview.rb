@@ -253,16 +253,22 @@ class EmpMonthMatview < ActiveRecord::Base
     5 => 'clasifica',
   }
   ANUARIES = {
-    '01' => 'Agricultura, Caza, Sivicultura y Pesca',
+    '01' => 'Agricultura, Caza, Silvicultura y Pesca',
     '02' => 'Explotación de Minas y Canteras',
     '03' => 'Industrias Manufactureras',
     '04' => 'Electricidad, Gas y Agua',
     '05' => 'Construcción',
     '06' => 'Comercio por mayor y menor, Restaurantes y Hoteles',
-    '07' => 'Transporte, Alimentación y Comunicaciones',
+    '07' => 'Transporte, Almacenamiento y Comunicaciones',
     '08' => 'Establecimienos Financieros, Seguros, Bienes Inmuebles y Servicios Prestados a las Empresas',
-    '09' => 'Serviciones Comunales, Sociale y Personales',
+    '09' => 'Servicios Comunales, Sociales y Personales',
     '10' => 'Sector Doméstico',
+    '11' => 'Administracion Pública',
+    '12' => 'Instituciones Descentralizadas',
+    '13' => 'Instituciones de Seguridad Social',
+    '14' => 'Empresas no Financieras',
+    '15' => 'Empresas Financieras',
+    '16' => 'Gobiernos Locales (Municipalidades)',
   }
 
   def readonly?
