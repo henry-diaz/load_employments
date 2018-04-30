@@ -101,6 +101,7 @@ class HomeController < ApplicationController
         # DAE
         @source = 'dae'
         where_string += ' AND source in (1)'
+        where_string += ' AND status = 1' if params[:q][:status].to_i == 1 # Proccess or payments conditions
         # anuary conditions
         where_string += ' AND clasifica IN (' + params[:q][:anuaries].map{|o| "\'#{o}\'"}.join(',')  + ')' if params[:q][:anuaries] && params[:q][:anuaries].size > 1
         # where_string += ' AND ciiu3_code IN (' + params[:q][:categories].map{|str| "'#{str}'"}.join(',')  + ')' if params[:q][:categories].size > 1
@@ -122,7 +123,7 @@ class HomeController < ApplicationController
       # Go to default values
       @employments = EmpMonthMatview
                       .select('sector, year, sum(total)::decimal / max(month) as total_emp, sum(amount)::decimal / max(month) as amount, max(pea) as pea, max(occupied) as occupied')
-                      .where(period: 201501 .. 201601)
+                      .where(period: 201601 .. 201712)
                       .where(source: [1,2]) # Default source statistics and customs
                       .group(:sector, :year)
                       .order(:sector, :year)

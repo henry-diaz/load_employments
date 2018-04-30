@@ -65,12 +65,12 @@
         %label
           %strong
             Desde
-        = f.collection_select :start_at, @times, :period, :period, { selected: (params[:q][:start_at] rescue 201501) }, {class: 'form-control'}
+        = f.collection_select :start_at, @times, :period, :period, { selected: (params[:q][:start_at] rescue 201601) }, {class: 'form-control'}
       .form-group
         %label
           %strong
             Hasta
-        = f.collection_select :end_at, @times, :period, :period, { selected: (params[:q][:end_at] rescue 201601) }, {class: 'form-control'}
+        = f.collection_select :end_at, @times, :period, :period, { selected: (params[:q][:end_at] rescue 201712) }, {class: 'form-control'}
       - if @source == 'tic'
         .form-group
           %label
@@ -83,15 +83,14 @@
             %strong
               Desagregado por
           = f.select :group_by, options_for_select(EmpMonthMatview::GROUP_BY_STATISTICS.invert, (params[:q][:group_by] rescue '0')), {}, {class: 'form-control'}
-      - if @source == 'tic'
-        %div
-          %label.radio-inline
-            = f.radio_button :status, 0, checked: (params[:q][:status].to_i == 0 rescue true)
-            Presentadas
-          &nbsp
-          %label.radio-inline
-            = f.radio_button :status, 1, checked: (params[:q][:status].to_i == 1 rescue false)
-            Pagadas
+      %div
+        %label.radio-inline
+          = f.radio_button :status, 0, checked: (params[:q][:status].to_i == 0 rescue true)
+          Presentadas
+        &nbsp
+        %label.radio-inline
+          = f.radio_button :status, 1, checked: (params[:q][:status].to_i == 1 rescue false)
+          Pagadas
       .checkbox
         %label
           = f.check_box :show_patron, { checked: (params[:q][:show_patron] == '1' rescue false) }, '1', '0'
