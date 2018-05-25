@@ -301,6 +301,15 @@ namespace :load do
     end
   end
 
+  desc 'Corregir NIT 0 en DAE'
+  task correct_nits_0: [:environment] do
+    require 'csv'
+    csv_path = "#{Rails.root.to_s}/db/unicos_nit_0_corregidos.csv"
+    CSV.foreach(csv_path, headers: true, encoding:'utf-8') do |row|
+      TmpEmployment.where('noPatronal' => row[2], source: 1).update_all(nit: row[1])
+    end
+  end
+
   desc 'Depto y munic para registros de la DAE'
   task depto_munics: [:environment] do
     TmpEmployment.where(source: 1).find_in_batches.with_index do |group, index|

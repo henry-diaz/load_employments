@@ -267,8 +267,9 @@ class EmpMonthMatview < ActiveRecord::Base
     '12' => 'Instituciones Descentralizadas',
     '13' => 'Instituciones de Seguridad Social',
     '14' => 'Empresas no Financieras',
-    '15' => 'Empresas Financieras',
-    '16' => 'Gobiernos Locales (Municipalidades)',
+    '15' => 'Salvadoreños en el Exterior',
+    '16' => 'Empresas Financieras',
+    '17' => 'Gobiernos Locales (Municipalidades)',
   }
 
   def readonly?
